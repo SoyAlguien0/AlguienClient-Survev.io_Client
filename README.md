@@ -1,4 +1,6 @@
-# Alguien Client
+# Alguien Client - Survev.io client
+
+# ⚠ This client it's not a hack ⚠
 
 ## Features
 
@@ -15,7 +17,7 @@
 - **Movement/Camera Interpolation:** Improves the fluidity of movement and the camera by interpolating player movement data for smoother transitions.
 - **Rotation Based on Local Data:** The clients calculates and adjusts the player's rotation based on the local mouse position, without the need for server response.
 
-### Menu & Key Bindings
+### Menu
 - A customizable menu allows players to toggle FPS display, uncap FPS, and hide or show the menu at any time with the **P** key. Also, all the actual/future features will be possible to activate or deactivate in this menu. <- **soon**
 
 ## Installation
