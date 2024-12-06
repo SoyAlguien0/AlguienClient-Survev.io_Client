@@ -26,7 +26,7 @@ To install the **Alguien Client**, you will need to **override** the existing ga
 
 ### Steps to Override the Client Using DevTools:
 
-1. **Download the mod file** (AlguienClient.js).
+1. **Download the client file** (AlguienClient.js) open it and then **ctrl + shift + s**.
 2. **Open Developer Tools in your browser**:
    - In **Chrome** or **Edge**, press **F12** or right-click on the page and select **Inspect**.
    - In **Firefox**, press **F12** or right-click and select **Inspect Element**.
