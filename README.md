@@ -37,7 +37,9 @@ To install the **Alguien Client**, you will need to **override** the existing ga
    - Now, select all the actual content and delete it, then **drag and drop** your downloaded `AlguienClient.js` file into the text editor to **override** the existing client script.
 5. **Enable Override**:
    - Once the override is set, the game client will load the modded version from your local file system every time you refresh the page or restart the game.
-     
+
+Optative. **Greasy Fork** ([AlguienClient.js](https://greasyfork.org/es/scripts/519982-alguien-client-surve-io-client/code)) open it with **Tampermonkey**. **This script doesn't have interpolation and local rotation**
+
 ### Important Notes:
 - **Persistence:** The client will be active as long as you have started the game with the dev tools opened and the override option enabled.
 - **Bugs:** For any bug or issue contact me via discord: **@SoyAlguien**.
