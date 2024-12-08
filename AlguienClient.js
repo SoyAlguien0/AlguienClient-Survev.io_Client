@@ -13734,6 +13734,7 @@ class ns {
         Math.abs(this.pos.x - this.posOld.x) > 50 ||
         Math.abs(this.pos.y - this.posOld.y) > 50
       ) &&
+        //movement interpolation
         ((this.pos.x += (this.posOld.x - this.pos.x) * 0.5),
         (this.pos.y += (this.posOld.y - this.pos.y) * 0.5)),
       (this.layer = this.netData.layer),
@@ -14436,7 +14437,7 @@ class ns {
 
     const mouseX = inputManager.mousePos.x;
     const mouseY = inputManager.mousePos.y;
-
+    //local rotation
     if (window.activeId == this.__id && !window.spectating) {
       this.bodyContainer.rotation = Math.atan2(
         mouseY - window.innerHeight / 2,
@@ -19343,6 +19344,7 @@ class _s {
               if (n == ue.None) break;
               this.onMsg(n, o.getStream());
             }
+            window.server = m.origin;
           }),
           (this.ws.onclose = () => {
             var p;
@@ -19527,10 +19529,9 @@ class _s {
       this.updateAmbience(),
       (this.camera.pos = h.copy(this.activePlayer.pos)),
       this.camera.applyShake();
+    //global variables
     window.activeId = this.activeId;
     window.spectating = this.spectating;
-    window.health = this.activePlayer.localData.health;
-
     const r = this.activePlayer.getZoom(),
       a = _.min(this.camera.screenWidth, this.camera.screenHeight),
       m = _.max(this.camera.screenWidth, this.camera.screenHeight),
@@ -24820,34 +24821,48 @@ var Bi;
   Bi.getRegistrations().then((u) => {
     for (const e of u) e.unregister();
   });
+
 class GameMod {
   constructor() {
     this.lastFrameTime = performance.now();
     this.frameCount = 0;
     this.fps = 0;
-    this.isFpsUncapped = false;
+    this.kills = 0;
+    this.isFpsUncapped = this.getFpsUncappedFromLocalStorage();
     this.isFpsVisible = true;
+    this.isPingVisible = true;
+    this.isKillsVisible = true;
     this.isMenuVisible = true;
 
-    this.animationFrameCallback = window.requestAnimationFrame.bind(window);
+    this.pingCounter = null;
+    this.initPingCounter();
+
+    this.setAnimationFrameCallback();
 
     this.initFpsCounter();
+    this.initKillsCounter();
     this.initMenu();
+    this.loadBackgroundFromLocalStorage();
+    this.loadLocalStorage();
     this.startUpdateLoop();
     this.setupWeaponBorderHandler();
     this.setupKeyListeners();
+  }
+
+  setAnimationFrameCallback() {
+    this.animationFrameCallback = this.isFpsUncapped
+      ? (callback) => setTimeout(callback, 1)
+      : window.requestAnimationFrame.bind(window);
   }
 
   initFpsCounter() {
     this.fpsCounter = document.createElement("div");
     this.fpsCounter.id = "fpsCounter";
     Object.assign(this.fpsCounter.style, {
-      position: "fixed",
-      top: "10px",
-      left: "10px",
       color: "white",
       backgroundColor: "rgba(0, 0, 0, 0.2)",
       padding: "5px 10px",
+      marginTop: "10px",
       borderRadius: "5px",
       fontFamily: "Arial, sans-serif",
       fontSize: "14px",
@@ -24855,12 +24870,80 @@ class GameMod {
       pointerEvents: "none",
     });
 
-    document.body.appendChild(this.fpsCounter);
+    const uiTopLeft = document.getElementById("ui-top-left");
+    if (uiTopLeft) {
+      uiTopLeft.appendChild(this.fpsCounter);
+    }
+
     this.updateFpsVisibility();
   }
 
+  initPingCounter() {
+    this.pingCounter = document.createElement("div");
+    this.pingCounter.id = "pingCounter";
+    Object.assign(this.pingCounter.style, {
+      color: "white",
+      backgroundColor: "rgba(0, 0, 0, 0.2)",
+      padding: "5px 10px",
+      marginTop: "10px",
+      borderRadius: "5px",
+      fontFamily: "Arial, sans-serif",
+      fontSize: "14px",
+      zIndex: "10000",
+      pointerEvents: "none",
+    });
+
+    const uiTopLeft = document.getElementById("ui-top-left");
+    if (uiTopLeft) {
+      uiTopLeft.appendChild(this.pingCounter);
+    }
+    this.updatePingVisibility();
+  }
+
+  initKillsCounter() {
+    this.killsCounter = document.createElement("div");
+    this.killsCounter.id = "killsCounter";
+    Object.assign(this.killsCounter.style, {
+      color: "white",
+      backgroundColor: "rgba(0, 0, 0, 0.2)",
+      padding: "5px 10px",
+      marginTop: "10px",
+      borderRadius: "5px",
+      fontFamily: "Arial, sans-serif",
+      fontSize: "14px",
+      zIndex: "10000",
+      pointerEvents: "none",
+    });
+
+    const uiTopLeft = document.getElementById("ui-top-left");
+    if (uiTopLeft) {
+      uiTopLeft.appendChild(this.killsCounter);
+    }
+    this.updateKillsVisibility();
+  }
+
   updateFpsVisibility() {
-    this.fpsCounter.style.display = this.isFpsVisible ? "block" : "none";
+    if (this.fpsCounter) {
+      this.fpsCounter.style.display = this.isFpsVisible ? "block" : "none";
+      this.fpsCounter.style.backgroundColor = this.isFpsVisible
+        ? "rgba(0, 0, 0, 0.2)"
+        : "transparent";
+    }
+  }
+
+  updatePingVisibility() {
+    if (this.pingCounter) {
+      this.pingCounter.style.display = this.isPingVisible ? "block" : "none";
+    }
+  }
+
+  updateKillsVisibility() {
+    if (this.killsCounter) {
+      this.killsCounter.style.display = this.isKillsVisible ? "block" : "none";
+      this.killsCounter.style.backgroundColor = this.isKillsVisible
+        ? "rgba(0, 0, 0, 0.2)"
+        : "transparent";
+    }
   }
 
   toggleFpsDisplay() {
@@ -24868,11 +24951,133 @@ class GameMod {
     this.updateFpsVisibility();
   }
 
+  togglePingDisplay() {
+    this.isPingVisible = !this.isPingVisible;
+    this.updatePingVisibility();
+  }
+
+  toggleKillsDisplay() {
+    this.isKillsVisible = !this.isKillsVisible;
+    this.updateKillsVisibility();
+  }
+
+  getKills() {
+    const killElement = document.querySelector(
+      ".ui-player-kills.js-ui-player-kills",
+    );
+    if (killElement) {
+      const kills = parseInt(killElement.textContent, 10);
+      return isNaN(kills) ? 0 : kills;
+    }
+    return 0;
+  }
+
+  getRegionFromLocalStorage() {
+    let config = localStorage.getItem("surviv_config");
+    if (config) {
+      let configObject = JSON.parse(config);
+      return configObject.region;
+    }
+    return null;
+  }
+
+  startPingTest() {
+    const currentUrl = window.location.href;
+    const isSpecialUrl = /\/#\w+/.test(currentUrl);
+
+    const teamSelectElement = document.getElementById("team-server-select");
+    const mainSelectElement = document.getElementById("server-select-main");
+
+    const region =
+      isSpecialUrl && teamSelectElement
+        ? teamSelectElement.value
+        : mainSelectElement
+          ? mainSelectElement.value
+          : null;
+
+    if (region && region !== this.currentServer) {
+      this.currentServer = region;
+      this.resetPing();
+
+      const servers = [
+        { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
+        { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
+        { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
+        { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
+      ];
+
+      const selectedServer = servers.find(
+        (server) => region.toUpperCase() === server.region.toUpperCase(),
+      );
+
+      if (selectedServer) {
+        this.pingTest = new PingTest(selectedServer);
+        this.pingTest.startPingTest();
+      } else {
+        this.resetPing();
+      }
+    }
+  }
+
+  resetPing() {
+    if (this.pingTest && this.pingTest.test.ws) {
+      this.pingTest.test.ws.close();
+      this.pingTest.test.ws = null;
+    }
+    this.pingTest = null;
+  }
+
+  getFpsUncappedFromLocalStorage() {
+    const savedConfig = localStorage.getItem("userSettings");
+    if (savedConfig) {
+      const configObject = JSON.parse(savedConfig);
+      return configObject.isFpsUncapped || false;
+    }
+    return false;
+  }
+
+  saveFpsUncappedToLocalStorage() {
+    let config = JSON.parse(localStorage.getItem("userSettings")) || {};
+    config.isFpsUncapped = this.isFpsUncapped;
+    localStorage.setItem("userSettings", JSON.stringify(config));
+  }
+
+  saveBackgroundToLocalStorage(url) {
+    localStorage.setItem("lastBackgroundUrl", url);
+  }
+
+  saveBackgroundToLocalStorage(image) {
+    if (typeof image === "string") {
+      localStorage.setItem("lastBackgroundType", "url");
+      localStorage.setItem("lastBackgroundValue", image);
+    } else {
+      localStorage.setItem("lastBackgroundType", "local");
+      const reader = new FileReader();
+      reader.onload = () => {
+        localStorage.setItem("lastBackgroundValue", reader.result);
+      };
+      reader.readAsDataURL(image);
+    }
+  }
+
+  loadBackgroundFromLocalStorage() {
+    const backgroundType = localStorage.getItem("lastBackgroundType");
+    const backgroundValue = localStorage.getItem("lastBackgroundValue");
+
+    const backgroundElement = document.getElementById("background");
+    if (backgroundElement && backgroundType && backgroundValue) {
+      if (backgroundType === "url") {
+        backgroundElement.style.backgroundImage = `url(${backgroundValue})`;
+      } else if (backgroundType === "local") {
+        backgroundElement.style.backgroundImage = `url(${backgroundValue})`;
+      }
+    }
+  }
+
   toggleFpsUncap() {
     this.isFpsUncapped = !this.isFpsUncapped;
-    this.animationFrameCallback = this.isFpsUncapped
-      ? (callback) => setTimeout(callback, 1)
-      : window.requestAnimationFrame.bind(window);
+    this.setAnimationFrameCallback();
+    this.saveFpsUncappedToLocalStorage();
   }
 
   updateHealthBars() {
@@ -24979,7 +25184,7 @@ class GameMod {
           case "P30L":
           case "DUAL P30L":
           case "UMP9":
-          case "VECTOR (9MM)":
+          case "VECTOR":
           case "VSS":
           case "FLAMETHROWER":
             border = "#FFAE00";
@@ -25079,6 +25284,44 @@ class GameMod {
     });
   }
 
+  updateUiElements() {
+    const currentUrl = window.location.href;
+
+    const isSpecialUrl = /\/#\w+/.test(currentUrl);
+
+    const playerOptions = document.getElementById("player-options");
+    const teamMenuContents = document.getElementById("team-menu-contents");
+    const startMenuContainer = document.querySelector(
+      "#start-menu .play-button-container",
+    );
+
+    if (!playerOptions) return;
+
+    if (
+      isSpecialUrl &&
+      teamMenuContents &&
+      playerOptions.parentNode !== teamMenuContents
+    ) {
+      teamMenuContents.appendChild(playerOptions);
+    } else if (
+      !isSpecialUrl &&
+      startMenuContainer &&
+      playerOptions.parentNode !== startMenuContainer
+    ) {
+      const firstChild = startMenuContainer.firstChild;
+      startMenuContainer.insertBefore(playerOptions, firstChild);
+    }
+    const teamMenu = document.getElementById("team-menu");
+    if (teamMenu) {
+      teamMenu.style.height = "355px";
+    }
+    const menuBlocks = document.querySelectorAll(".menu-block");
+    menuBlocks.forEach((block) => {
+      block.style.maxHeight = "355px";
+    });
+    //scalable?
+  }
+
   updateMenuButtonText() {
     const hideButton = document.getElementById("hideMenuButton");
     hideButton.textContent = this.isMenuVisible
@@ -25093,36 +25336,50 @@ class GameMod {
       }
     });
   }
-
+  //menu
   initMenu() {
     const menu = document.createElement("div");
     menu.id = "soyAlguienMenu";
     Object.assign(menu.style, {
-      position: "fixed",
-      top: "50px",
-      left: "10px",
       backgroundColor: "rgba(0, 0, 0, 0.8)",
       padding: "15px",
+      marginLeft: "15px",
       borderRadius: "10px",
       boxShadow: "0 4px 10px rgba(0, 0, 0, 0.6)",
       zIndex: "10001",
       width: "250px",
       fontFamily: "Arial, sans-serif",
       color: "#fff",
+      maxHeight: "400px",
+      overflowY: "auto",
     });
 
     const title = document.createElement("h2");
-    title.textContent = "SoyAlguien Mod Menu";
+    title.textContent = "SoyAlguien Client";
     title.style.margin = "0 0 10px";
     title.style.textAlign = "center";
     title.style.fontSize = "18px";
     title.style.color = "#FFAE00";
     menu.appendChild(title);
 
+    const updateLocalStorage = () => {
+      localStorage.setItem(
+        "userSettings",
+        JSON.stringify({
+          isFpsVisible: this.isFpsVisible,
+          isPingVisible: this.isPingVisible,
+          isFpsUncapped: this.isFpsUncapped,
+          isKillsVisible: this.isKillsVisible,
+        }),
+      );
+    };
+
+    this.loadLocalStorage();
+
     const fpsToggle = document.createElement("button");
-    fpsToggle.textContent = "Show FPS";
+    fpsToggle.textContent = `Show FPS ${this.isFpsVisible ? "✅" : "❌"}`;
     Object.assign(fpsToggle.style, {
-      backgroundColor: "#FFAE00",
+      backgroundColor: this.isFpsVisible ? "#4CAF50" : "#FF0000",
       border: "none",
       color: "#fff",
       padding: "10px",
@@ -25132,13 +25389,21 @@ class GameMod {
       fontSize: "14px",
       cursor: "pointer",
     });
-    fpsToggle.onclick = () => this.toggleFpsDisplay();
+    fpsToggle.onclick = () => {
+      this.isFpsVisible = !this.isFpsVisible;
+      this.updateFpsVisibility();
+      fpsToggle.textContent = `Show FPS ${this.isFpsVisible ? "✅" : "❌"}`;
+      fpsToggle.style.backgroundColor = this.isFpsVisible
+        ? "#4CAF50"
+        : "#FF0000";
+      updateLocalStorage();
+    };
     menu.appendChild(fpsToggle);
 
-    const uncapFpsToggle = document.createElement("button");
-    uncapFpsToggle.textContent = "Uncap FPS";
-    Object.assign(uncapFpsToggle.style, {
-      backgroundColor: "#FF4500",
+    const pingToggle = document.createElement("button");
+    pingToggle.textContent = `Show Ping ${this.isPingVisible ? "✅" : "❌"}`;
+    Object.assign(pingToggle.style, {
+      backgroundColor: this.isPingVisible ? "#4CAF50" : "#FF0000",
       border: "none",
       color: "#fff",
       padding: "10px",
@@ -25148,13 +25413,68 @@ class GameMod {
       fontSize: "14px",
       cursor: "pointer",
     });
-    uncapFpsToggle.onclick = () => this.toggleFpsUncap();
+    pingToggle.onclick = () => {
+      this.isPingVisible = !this.isPingVisible;
+      this.updatePingVisibility();
+      pingToggle.textContent = `Show Ping ${this.isPingVisible ? "✅" : "❌"}`;
+      pingToggle.style.backgroundColor = this.isPingVisible
+        ? "#4CAF50"
+        : "#FF0000";
+      updateLocalStorage();
+    };
+    menu.appendChild(pingToggle);
+
+    const killsToggle = document.createElement("button");
+    killsToggle.textContent = `Show Kills ${this.isKillsVisible ? "✅" : "❌"}`;
+    Object.assign(killsToggle.style, {
+      backgroundColor: this.isKillsVisible ? "#4CAF50" : "#FF0000",
+      border: "none",
+      color: "#fff",
+      padding: "10px",
+      borderRadius: "5px",
+      width: "100%",
+      marginBottom: "10px",
+      fontSize: "14px",
+      cursor: "pointer",
+    });
+    killsToggle.onclick = () => {
+      this.isKillsVisible = !this.isKillsVisible;
+      this.updateKillsVisibility();
+      killsToggle.textContent = `Show Kills ${this.isKillsVisible ? "✅" : "❌"}`;
+      killsToggle.style.backgroundColor = this.isKillsVisible
+        ? "#4CAF50"
+        : "#FF0000";
+      updateLocalStorage();
+    };
+    menu.appendChild(killsToggle);
+
+    const uncapFpsToggle = document.createElement("button");
+    uncapFpsToggle.textContent = `Uncap FPS ${this.isFpsUncapped ? "✅" : "❌"}`;
+    Object.assign(uncapFpsToggle.style, {
+      backgroundColor: this.isFpsUncapped ? "#4CAF50" : "#FF0000",
+      border: "none",
+      color: "#fff",
+      padding: "10px",
+      borderRadius: "5px",
+      width: "100%",
+      marginBottom: "10px",
+      fontSize: "14px",
+      cursor: "pointer",
+    });
+    uncapFpsToggle.onclick = () => {
+      this.toggleFpsUncap();
+      uncapFpsToggle.textContent = `Uncap FPS ${this.isFpsUncapped ? "✅" : "❌"}`;
+      uncapFpsToggle.style.backgroundColor = this.isFpsUncapped
+        ? "#4CAF50"
+        : "#FF0000";
+      updateLocalStorage();
+    };
     menu.appendChild(uncapFpsToggle);
 
     const hideShowToggle = document.createElement("button");
-    hideShowToggle.textContent = "Hide/Show Menu [P]";
+    hideShowToggle.textContent = `👀 Hide/Show Menu [P]`;
     Object.assign(hideShowToggle.style, {
-      backgroundColor: "#808080",
+      backgroundColor: "#6F42C1",
       border: "none",
       color: "#fff",
       padding: "10px",
@@ -25167,9 +25487,90 @@ class GameMod {
     hideShowToggle.onclick = () => this.toggleMenuVisibility();
     menu.appendChild(hideShowToggle);
 
-    document.body.appendChild(menu);
+    const backgroundToggle = document.createElement("button");
+    backgroundToggle.textContent = `🎨 Change Background`;
+    Object.assign(backgroundToggle.style, {
+      backgroundColor: "#007BFF",
+      border: "none",
+      color: "#fff",
+      padding: "10px",
+      borderRadius: "5px",
+      width: "100%",
+      marginBottom: "10px",
+      fontSize: "14px",
+      cursor: "pointer",
+    });
+    backgroundToggle.onclick = () => {
+      const backgroundElement = document.getElementById("background");
+      if (!backgroundElement) {
+        alert("Element with id 'background' not found.");
+        return;
+      }
+      const choice = prompt(
+        "Enter '1' to provide a URL or '2' to upload a local image:",
+      );
+
+      if (choice === "1") {
+        const newBackgroundUrl = prompt(
+          "Enter the URL of the new background image:",
+        );
+        if (newBackgroundUrl) {
+          backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
+          this.saveBackgroundToLocalStorage(newBackgroundUrl);
+          alert("Background updated successfully!");
+        }
+      } else if (choice === "2") {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.onchange = (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              backgroundElement.style.backgroundImage = `url(${reader.result})`;
+              this.saveBackgroundToLocalStorage(file);
+              alert("Background updated successfully!");
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        fileInput.click();
+      }
+    };
+
+    menu.appendChild(backgroundToggle);
+
+    window.onload = () => {
+      const savedBackground = localStorage.getItem("backgroundImage");
+      if (savedBackground) {
+        const backgroundElement = document.getElementById("background");
+        if (backgroundElement) {
+          backgroundElement.style.backgroundImage = `url(${savedBackground})`;
+        }
+      }
+    };
+
+    const startRowTop = document.getElementById("start-row-top");
+    if (startRowTop) {
+      startRowTop.appendChild(menu);
+    }
 
     this.menu = menu;
+  }
+
+  loadLocalStorage() {
+    const savedSettings = JSON.parse(localStorage.getItem("userSettings"));
+    if (savedSettings) {
+      this.isFpsVisible = savedSettings.isFpsVisible ?? this.isFpsVisible;
+      this.isPingVisible = savedSettings.isPingVisible ?? this.isPingVisible;
+      this.isFpsUncapped = savedSettings.isFpsUncapped ?? this.isFpsUncapped;
+      this.isKillsVisible = savedSettings.isKillsVisible ?? this.isKillsVisible;
+    }
+
+    this.updateKillsVisibility();
+    this.updateFpsVisibility();
+    this.updatePingVisibility();
   }
 
   toggleMenuVisibility() {
@@ -25188,14 +25589,91 @@ class GameMod {
       this.frameCount = 0;
       this.lastFrameTime = now;
 
-      if (this.isFpsVisible) {
+      this.kills = this.getKills();
+
+      if (this.isFpsVisible && this.fpsCounter) {
         this.fpsCounter.textContent = `FPS: ${this.fps}`;
+      }
+
+      if (this.isKillsVisible && this.killsCounter) {
+        this.killsCounter.textContent = `Kills: ${this.kills}`;
+      }
+
+      if (this.isPingVisible && this.pingCounter && this.pingTest) {
+        const result = this.pingTest.getPingResult();
+        this.pingCounter.textContent = `PING: ${result.ping} ms`;
       }
     }
 
-    this.updateHealthBars();
-    this.updateBoostBars();
+    this.startPingTest();
     this.animationFrameCallback(() => this.startUpdateLoop());
+    this.updateUiElements();
+    this.updateBoostBars();
+    this.updateHealthBars();
+  }
+}
+
+class PingTest {
+  constructor(selectedServer) {
+    this.ptcDataBuf = new ArrayBuffer(1);
+    this.test = {
+      region: selectedServer.region,
+      url: `wss://${selectedServer.url}/ptc`,
+      ping: 9999,
+      ws: null,
+      sendTime: 0,
+      retryCount: 0,
+    };
+  }
+
+  startPingTest() {
+    if (!this.test.ws) {
+      const ws = new WebSocket(this.test.url);
+      ws.binaryType = "arraybuffer";
+
+      ws.onopen = () => {
+        this.sendPing();
+        this.test.retryCount = 0;
+      };
+
+      ws.onmessage = () => {
+        const elapsed = (Date.now() - this.test.sendTime) / 1e3;
+        this.test.ping = Math.round(elapsed * 1000);
+        this.test.retryCount = 0;
+        setTimeout(() => this.sendPing(), 200);
+      };
+
+      ws.onerror = () => {
+        this.test.ping = "Error";
+        this.test.retryCount++;
+        if (this.test.retryCount < 5) {
+          setTimeout(() => this.startPingTest(), 2000);
+        } else {
+          this.test.ws.close();
+          this.test.ws = null;
+        }
+      };
+
+      ws.onclose = () => {
+        this.test.ws = null;
+      };
+
+      this.test.ws = ws;
+    }
+  }
+
+  sendPing() {
+    if (this.test.ws.readyState === WebSocket.OPEN) {
+      this.test.sendTime = Date.now();
+      this.test.ws.send(this.ptcDataBuf);
+    }
+  }
+
+  getPingResult() {
+    return {
+      region: this.test.region,
+      ping: this.test.ping,
+    };
   }
 }
 
