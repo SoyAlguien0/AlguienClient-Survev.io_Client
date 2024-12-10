@@ -17424,6 +17424,9 @@ class As {
         return this.initialized && this.playing && !this.spectating && !this.uiManager.displayingStats
     }
     update(e) {
+        //global variables
+        window.activeId = this.activeId;
+        window.spectating = this.spectating;
         const t = this.smokeBarn.particles
           , i = {};
         this.playing && (this.playingTicker += e),
