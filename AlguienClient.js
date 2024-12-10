@@ -5127,7 +5127,7 @@ class Da {
     }
 }
 //input manager
-const inputManager = new ka(document.body);
+const inputManager = new Da(document.body);
 
 var U = (u => (u[u.Backspace = 8] = "Backspace",
 u[u.Enter = 13] = "Enter",
