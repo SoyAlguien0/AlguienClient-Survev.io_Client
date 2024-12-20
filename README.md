@@ -4,6 +4,11 @@
 # Alguien Client - Survev.io Client
 ⚠ **This client is not a hack** ⚠
 
+⚠ **If the game is updated the client will not work, you will have to wait for the client to be updated** ⚠
+
+⚠ **The Greasy Fork version does not include interpolation, local rotation and a working ping counter.** ⚠
+
+
 ## Features
 
 ### 🎮 FPS Show & Uncapping FPS
