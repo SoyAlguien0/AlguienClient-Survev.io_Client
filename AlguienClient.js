@@ -1,14 +1,39 @@
 var fr = Object.defineProperty;
 var wr = (u, e, t) => e in u ? fr(u, e, {
-    enumerable: !0,
-    configurable: !0,
-    writable: !0,
-    value: t
+enumerable: !0,
+configurable: !0,
+writable: !0,
+value: t
 }) : u[e] = t;
 var s = (u, e, t) => wr(u, typeof e != "symbol" ? e + "" : e, t);
-import {i as Be, $ as c, C as ie, T as X, S as re, G as Se, a as gr, b as Qe, R as Sr, c as yr, P as Rt, d as ht, B as Gt, e as Ut, A as xr, f as zr, s as br, g as kr, h as vr} from "./vendor-DgW1hTrx.js";
-import {G as N, a as F, u as y, m as _, v as h, C as Ye, c as G, P as $e, E as fe, b as qe, I as B, T as we, d as ke, M as oe, e as Pe, f as lt, O as pe, g as Oi, h as Je, i as _r, j as Ir, B as ct, k as $t, l as Mr, A as ce, n as se, H as Ve, o as pt, R as Ni, S as _t, p as It, D as We, q as Le, J as Tr, r as ue, s as Ht, t as Xt, W as rt, U as Pr, w as Cr, x as Dr, y as Lr, z as Zt, F as Ar, K as Er, L as Br, N as Rr, Q as Or, V as Nr, X as Fr, Y as jr, Z as qr, _ as Vr, $ as Mt, a0 as Me, a1 as Ot, a2 as Kt} from "./shared-D2NQTqFj.js";
-(function() {
+
+const links = Array.from(document.querySelectorAll('link[rel="modulepreload"][href]'));
+
+const vendorLink = links.find(link => link.href.includes('vendor-'));
+const sharedLink = links.find(link => link.href.includes('shared-'));
+
+(async () => {
+  
+  const links = Array.from(document.querySelectorAll('link[rel="modulepreload"][href]'));
+
+  const vendorLink = links.find(link => link.href.includes('vendor-'));
+  const sharedLink = links.find(link => link.href.includes('shared-'));
+
+  if (!vendorLink || !sharedLink) {
+    console.error('Error, not vendor/shared');
+    return;
+  }
+
+
+    const vendorModule = await import(vendorLink.href);
+    const sharedModule = await import(sharedLink.href);
+
+
+    const { i: Be, $: c, C: ie, T: X, S: re, G: Se, a: gr, b: Qe, R: Sr, c: yr, P: Rt, d: ht, B: Gt, e: Ut, A: xr, f: zr, s: br, g: kr, h: vr } = vendorModule; 
+    const { G: N, a: F, u: y, m: _, v: h, C: Ye, c: G, P: $e, E: fe, b: qe, I: B, T: we, d: ke, M: oe, e: Pe, f: lt, O: pe, g: Oi, h: Je, i: _r, j: Ir, B: ct, k: $t, l: Mr, A: ce, n: se, H: Ve, o: pt, R: Ni, S: _t, p: It, D: We, q: Le, J: Tr, r: ue, s: Ht, t: Xt, W: rt, U: Pr, w: Cr, x: Dr, y: Lr, z: Zt, F: Ar, K: Er, L: Br, N: Rr, Q: Or, V: Nr, X: Fr, Y: jr, Z: qr, _: Vr, $: Mt, a0: Me, a1: Ot, a2: Kt } = sharedModule;
+
+
+    (function() {
     const e = document.createElement("link").relList;
     if (e && e.supports && e.supports("modulepreload"))
         return;
@@ -22371,7 +22396,8 @@ class GameMod {
             case "BLR 81":
             case "SVD-63":
             case "M134":
-            case "WATER GUN":
+            case "GROZA":
+            case "GROZA-S":
               border = "#007FFF";
               break;
   
@@ -22844,3 +22870,4 @@ class GameMod {
   }
   
   const gameMod = new GameMod();
+})();
