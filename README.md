@@ -18,7 +18,7 @@
 3. **Add the Extension**:
    - Open your browser and go to the extensions page.
    - Enable **Developer Mode**.
-   - Click on **Load Unpacked** and select the folder where you unzipped the extension.
+   - Click on **Load Unpacked** and select the folder where you unzipped the extension. **Select the folder named "extension"**.
 4. **Enjoy**: Start using the Alguien Client and enjoy the enhanced features!
 
 
