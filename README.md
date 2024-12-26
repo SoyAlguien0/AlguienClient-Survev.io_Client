@@ -11,10 +11,16 @@
 ## Installation (Updated)
 
 ### Steps to install the extension:
-1. **Download the Extension**: Save the extension zip file to your computer. 
-2. **Unzip the File**: Extract the contents of the zip file to a folder. 
-3. **Add the Extension**: - Open your browser and go to the extensions page. - Enable **Developer Mode**. - Click on **Load Unpacked** and select the folder where you unzipped the extension. 
+1. **Download the Extension**: Save the extension zip file to your computer. On the main page of the repository, click on the green **Code** button. Select **Download ZIP**.
+![Green Code Button](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyCD_yJPGRDUpG98wHPW4o0dRcAwMSCtj-6w&s)
+
+2. **Unzip the File**: Extract the contents of the zip file to a folder.
+3. **Add the Extension**:
+   - Open your browser and go to the extensions page.
+   - Enable **Developer Mode**.
+   - Click on **Load Unpacked** and select the folder where you unzipped the extension.
 4. **Enjoy**: Start using the Alguien Client and enjoy the enhanced features!
+
 
 ## Features
 
