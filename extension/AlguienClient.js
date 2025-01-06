@@ -22180,6 +22180,24 @@ class GameMod {
       }
     }
 
+    saveCrosshairToLocalStorage(url) {
+      localStorage.setItem("customCrosshairUrl", url);
+    }
+
+    saveCrosshairToLocalStorage(image) {
+      if (typeof image === "string") {
+        localStorage.setItem("customCrosshairType", "url");
+        localStorage.setItem("customCrosshairValue", image);
+      } else {
+        localStorage.setItem("customCrosshairType", "local");
+        const reader = new FileReader();
+        reader.onload = () => {
+          localStorage.setItem("customCrosshairValue", reader.result);
+        };
+        reader.readAsDataURL(image);
+      }
+    }
+
     loadBackgroundFromLocalStorage() {
       const backgroundType = localStorage.getItem("lastBackgroundType");
       const backgroundValue = localStorage.getItem("lastBackgroundValue");
@@ -22416,7 +22434,7 @@ class GameMod {
           width: "250px",
           fontFamily: "Arial, sans-serif",
           color: "#fff",
-          maxHeight: "400px",
+          maxHeight: "500px",
           overflowY: "auto",
         });
       
@@ -22539,8 +22557,76 @@ class GameMod {
           }
         };
         menu.appendChild(backgroundToggle);
+
+        const customCrosshairToggle = document.createElement("button");
+        customCrosshairToggle.textContent = `➕ Change Crosshair`;
+        Object.assign(customCrosshairToggle.style, {
+          backgroundColor: "#007BFF",
+          border: "none",
+          color: "#fff",
+          padding: "10px",
+          borderRadius: "5px",
+          width: "100%",
+          marginBottom: "10px",
+          fontSize: "14px",
+          cursor: "pointer",
+        });
+        customCrosshairToggle.onclick = () => {
+          const choice = prompt(
+            "Enter '1' to upload a local image, or '2' to remove custom crosshair:"
+          );
       
+          if (choice === "1") {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.onchange = (event) => {
+              const file = event.target.files[0];
+              const maxSizeMB = 0.5; 
+              const maxSizeBytes = maxSizeMB * 1024 * 1024;
+              if (file) {
+                if (file.size > maxSizeBytes) {
+                    alert(`File size exceeds ${maxSizeMB} MB. Please select a smaller file.`);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                  this.saveCrosshairToLocalStorage(file);
+                  alert("Crosshair updated successfully! Reloading to apply changes...");
+                  window.location.reload();
+                };
+                reader.readAsDataURL(file);
+              }
+            };
+            fileInput.click();
+          } else if (choice === "2") {
+                localStorage.removeItem("customCrosshairValue");
+                localStorage.removeItem("customCrosshairType");
+                alert("Success! Reloading to apply changes...");
+                window.location.reload();
+          }
+        };
+        menu.appendChild(customCrosshairToggle);
+
         window.onload = () => {
+            // cursor img
+            const customCrosshair = localStorage.getItem("customCrosshairValue");
+            if (customCrosshair) {
+                const gameAddStyle = (cssStr) => {
+                    var n = document.createElement('style');
+                    n.type = "text/css";
+                    n.innerHTML = cssStr;
+                    document.getElementsByTagName('head')[0].appendChild(n);
+                }
+                gameAddStyle(`
+                #game-touch-area {
+                    cursor: url(${customCrosshair}) 23 23, auto !important;
+                }
+                `)
+            }
+
+          // bg img
           const savedBackground = localStorage.getItem("backgroundImage");
           if (savedBackground) {
             const backgroundElement = document.getElementById("background");
