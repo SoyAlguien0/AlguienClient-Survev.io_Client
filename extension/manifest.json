@@ -8,6 +8,7 @@
     "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
+    "https://soyalguien0.github.io/*",
     "https://survev.io/*"
   ],
   "declarative_net_request": {
