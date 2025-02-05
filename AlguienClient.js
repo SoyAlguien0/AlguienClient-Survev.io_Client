@@ -1,3 +1,5 @@
+//version 1.1.0
+
 var fr = Object.defineProperty;
 var wr = (u, e, t) => e in u ? fr(u, e, {
 enumerable: !0,
