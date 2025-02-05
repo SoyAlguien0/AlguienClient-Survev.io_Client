@@ -12475,69 +12475,79 @@ class ws {
     }
     update(e, t, i, r, a, m, o, n, p, d, f, w, g) {
         var Z, K, ae;
-        const x = F[this.netData.activeWeapon]
-          , S = this.__id == d
-          , z = t.getPlayerById(d);
-        if (this.posOld = h.copy(this.pos),
-        this.dirOld = h.copy(this.dir),
-        this.pos = h.copy(this.netData.pos),
-        !(
-            Math.abs(this.pos.x - this.posOld.x) > 50 ||
-            Math.abs(this.pos.y - this.posOld.y) > 50
-          ) &&
-            //movement interpolation - 12490
-            ((this.pos.x += (this.posOld.x - this.pos.x) * 0.5),
-            (this.pos.y += (this.posOld.y - this.pos.y) * 0.5)),
-        this.dir = h.copy(this.netData.dir),
-        this.layer = this.netData.layer,
-        this.downed = this.netData.downed,
-        this.rad = this.netData.scale * N.player.radius,
-        !_.eqAbs(this.rad, this.bodyRad)) {
-            const $ = this.rad - this.bodyRad;
-            let j = Math.abs($) > 1e-4 ? $ * e * 6 : $;
-            this.isNew && (j = $),
-            this.bodyRad += j,
-            this.visualsDirty = !0
+        const x = F[this.netData.activeWeapon],
+              S = this.__id == d,
+              z = t.getPlayerById(d);
+    
+        this.posOld = h.copy(this.pos);
+        this.dirOld = h.copy(this.dir);
+        this.pos = h.copy(this.netData.pos);
+    
+        // Verificar si la interpolación está activa y el cambio de posición no es significativo
+        if (window.isInterpolation && (Math.abs(this.pos.x - this.posOld.x) <= 10 && Math.abs(this.pos.y - this.posOld.y) <= 10)) {
+            // Aplicar interpolación de movimiento
+            this.pos.x += (this.posOld.x - this.pos.x) * 0.5;
+            this.pos.y += (this.posOld.y - this.pos.y) * 0.5;
         }
+    
+        this.dir = h.copy(this.netData.dir);
+        this.layer = this.netData.layer;
+        this.downed = this.netData.downed;
+        this.rad = this.netData.scale * N.player.radius;
+    
+        if (!_.eqAbs(this.rad, this.bodyRad)) {
+            const deltaRad = this.rad - this.bodyRad;
+            let j = Math.abs(deltaRad) > 1e-4 ? deltaRad * e * 6 : deltaRad;
+            this.isNew && (j = deltaRad);
+            this.bodyRad += j;
+            this.visualsDirty = true;
+        }
+    
         if (S) {
-            const $ = o.screenToPoint(h.create(o.screenWidth, 0))
-              , j = h.sub($, o.pos);
-            this.viewAabb.min = h.sub(o.pos, j),
-            this.viewAabb.max = h.add(o.pos, j)
+            const $ = o.screenToPoint(h.create(o.screenWidth, 0)),
+                  j = h.sub($, o.pos);
+            this.viewAabb.min = h.sub(o.pos, j);
+            this.viewAabb.max = h.add(o.pos, j);
         }
+    
         this.updatePerks(S, g, p);
+    
         const I = this.weapTypeOld != this.netData.activeWeapon;
-        this.weapTypeOld = this.netData.activeWeapon,
-        this.lastThrowablePickupSfxTicker -= e,
+        this.weapTypeOld = this.netData.activeWeapon;
+        this.lastThrowablePickupSfxTicker -= e;
         this.noCeilingRevealTicker -= e;
-        const k = t.getPlayerInfo(d).groupId
-          , v = t.getPlayerInfo(this.__id)
-          , b = v.groupId == k;
-        this.nameText.text = v.name,
+    
+        const k = t.getPlayerInfo(d).groupId,
+              v = t.getPlayerInfo(this.__id),
+              b = v.groupId == k;
+    
+        this.nameText.text = v.name;
         this.nameText.visible = !S && b;
-        let M = null
-          , A = null;
+    
+        let M = null, A = null;
         const D = i.obstaclePool.getPool();
+    
         for (let $ = 0; $ < D.length; $++) {
             const j = D[$];
             if (j.active && !j.dead && j.layer == this.netData.layer) {
                 if (j.isBush) {
                     const Y = this.rad * .25;
-                    G.intersectCircle(j.collider, this.pos, Y) && (M = j)
+                    G.intersectCircle(j.collider, this.pos, Y) && (M = j);
                 } else if (j.isDoor) {
-                    const Y = this.rad + .25
-                      , he = h.sub(j.pos, this.pos)
-                      , ze = h.rotate(h.create(1, 0), j.rot);
-                    G.intersectCircle(j.collider, this.pos, Y) && (j.door.locked || j.door.openOneWay && h.dot(he, ze) < 0) && (A = j)
+                    const Y = this.rad + .25,
+                          he = h.sub(j.pos, this.pos),
+                          ze = h.rotate(h.create(1, 0), j.rot);
+                    G.intersectCircle(j.collider, this.pos, Y) && (j.door.locked || j.door.openOneWay && h.dot(he, ze) < 0) && (A = j);
                 }
             }
         }
+    
         const B = M != null;
         if (B && (this.insideObstacleType = M == null ? void 0 : M.type),
-        this.lastInsideObstacleTime -= e,
-        this.wasInsideObstacle != B && this.lastInsideObstacleTime < 0 && !this.isNew) {
+            this.lastInsideObstacleTime -= e,
+            this.wasInsideObstacle != B && this.lastInsideObstacleTime < 0 && !this.isNew) {
             const $ = oe[this.insideObstacleType];
-            this.lastInsideObstacleTime = .2,
+            this.lastInsideObstacleTime = .2;
             r.playSound($ == null ? void 0 : $.sound.enter, {
                 channel: "sfx",
                 soundPos: this.pos,
@@ -12545,14 +12555,17 @@ class ws {
                 layer: this.layer,
                 filter: "muffled"
             });
-            const j = h.normalizeSafe(h.sub(this.posOld, this.pos), h.create(1, 0))
-              , Y = B ? 1 : -1
-              , he = Math.floor(y.random(3, 5));
+    
+            const j = h.normalizeSafe(h.sub(this.posOld, this.pos), h.create(1, 0)),
+                  Y = B ? 1 : -1,
+                  he = Math.floor(y.random(3, 5));
+    
             for (let ze = 0; ze < he; ze++) {
                 const Ce = h.mul(h.rotate(h.mul(j, Y), (Math.random() - .5) * Math.PI / 1.5), y.random(6, 8));
-                a.addParticle($.hitParticle, this.layer, this.pos, Ce)
+                a.addParticle($.hitParticle, this.layer, this.pos, Ce);
             }
         }
+    
         this.wasInsideObstacle = B;
         const T = this.isNearDoorError;
         if (this.isNearDoorError = A != null,
@@ -13027,7 +13040,7 @@ class ws {
         const mouseX = inputManager.mousePos.x;
             const mouseY = inputManager.mousePos.y;
             //local rotation - 13031
-            if (window.activeId == this.__id && !window.spectating) {
+            if (window.activeId == this.__id && !window.spectating && window.isLocalRotation) {
             this.bodyContainer.rotation = Math.atan2(
                 mouseY - window.innerHeight / 2,
                 mouseX - window.innerWidth / 2,
@@ -22008,6 +22021,7 @@ var Oi;
 
 class GameMod {
     constructor() {
+        const settings = JSON.parse(localStorage.getItem("gameSettings") || '{}');
         this.lastFrameTime = performance.now();
         this.frameCount = 0;
         this.fps = 0;
@@ -22018,6 +22032,13 @@ class GameMod {
         this.isKillsVisible = true;
         this.isMenuVisible = true;
         this.isClean = false;
+        this.isLocalRotation = settings["local-rotation"] !== undefined ? settings["local-rotation"] : true;
+        this.isFpsUncapped = settings["fps-uncap"] !== undefined ? settings["fps-uncap"] : true;
+        this.isInterpolation = settings["movement-interpolation"] !== undefined ? settings["movement-interpolation"] : true;
+
+        window.isLocalRotation = this.isLocalRotation;
+        window.isInterpolation = this.isInterpolation;
+        window.isFpsUncapped = this.isFpsUncapped;
 
 
         this.initCounter("fpsCounter", "isFpsVisible", this.updateFpsVisibility.bind(this));
@@ -22058,6 +22079,15 @@ class GameMod {
     updateFpsVisibility() {
         this.updateVisibility("fpsCounter", this.isFpsVisible);
     }
+
+    updateFpsToggle() {
+        if (this.isFpsUncapped) { 
+            this.animationFrameCallback = (callback) => setTimeout(callback, 1);
+        } else {
+            this.animationFrameCallback = (callback) => requestAnimationFrame(callback);
+        }
+    }
+    
 
     updatePingVisibility() {
         this.updateVisibility("pingCounter", this.isPingVisible);
@@ -22409,48 +22439,77 @@ class GameMod {
         const menu = document.createElement("div");
         menu.id = "soyAlguienMenu";
         Object.assign(menu.style, {
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          padding: "15px",
-          marginLeft: "15px",
-          borderRadius: "10px",
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
-          zIndex: "10001",
-          width: "250px",
-          fontFamily: "Arial, sans-serif",
-          color: "#fff",
-          maxHeight: "400px",
-          overflowY: "auto",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            padding: "15px",
+            marginLeft: "15px",
+            borderRadius: "10px",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+            zIndex: "10001",
+            width: "250px",
+            fontFamily: "Arial, sans-serif",
+            color: "#fff",
+            maxHeight: "400px",
+            overflowY: "auto",
+            zIndex: "1",
         });
-      
+    
         const title = document.createElement("h2");
         title.textContent = "SoyAlguien Client";
         Object.assign(title.style, {
-          margin: "0 0 10px",
-          textAlign: "center",
-          fontSize: "18px",
-          color: "#FFAE00",
+            margin: "0 0 10px",
+            textAlign: "center",
+            fontSize: "18px",
+            color: "#FFAE00",
         });
         menu.appendChild(title);
-      
+    
         const updateLocalStorage = () => {
-          localStorage.setItem(
-            "userSettings",
-            JSON.stringify({
-              isFpsVisible: this.isFpsVisible,
-              isPingVisible: this.isPingVisible,
-              isKillsVisible: this.isKillsVisible,
-              isClean: this.isClean
-            })
-          );
+            localStorage.setItem(
+                "userSettings",
+                JSON.stringify({
+                    isFpsVisible: this.isFpsVisible,
+                    isPingVisible: this.isPingVisible,
+                    isKillsVisible: this.isKillsVisible,
+                    isClean: this.isClean
+                })
+            );
         };
-      
+    
         this.loadLocalStorage();
-      
+    
         const createToggleButton = (text, stateKey, onClick) => {
-          const button = document.createElement("button");
-          button.textContent = `${text} ${this[stateKey] ? "✅" : "❌"}`;
-          Object.assign(button.style, {
-            backgroundColor: this[stateKey] ? "#4CAF50" : "#FF0000",
+            const button = document.createElement("button");
+            button.textContent = `${text} ${this[stateKey] ? "✅" : "❌"}`;
+            Object.assign(button.style, {
+                backgroundColor: this[stateKey] ? "#4CAF50" : "#FF0000",
+                border: "none",
+                color: "#fff",
+                padding: "10px",
+                borderRadius: "5px",
+                width: "100%",
+                marginBottom: "10px",
+                fontSize: "14px",
+                cursor: "pointer",
+            });
+            button.onclick = () => {
+                this[stateKey] = !this[stateKey];
+                onClick();
+                button.textContent = `${text} ${this[stateKey] ? "✅" : "❌"}`;
+                button.style.backgroundColor = this[stateKey] ? "#4CAF50" : "#FF0000";
+                updateLocalStorage();
+            };
+            return button;
+        };
+    
+        menu.appendChild(createToggleButton("Show FPS", "isFpsVisible", this.updateFpsVisibility.bind(this)));
+        menu.appendChild(createToggleButton("Show Ping", "isPingVisible", this.updatePingVisibility.bind(this)));
+        menu.appendChild(createToggleButton("Show Kills", "isKillsVisible", this.updateKillsVisibility.bind(this)));
+        menu.appendChild(createToggleButton("Clean Menu", "isClean", this.updateCleanMode.bind(this)));
+    
+        const hideShowToggle = document.createElement("button");
+        hideShowToggle.textContent = `👀 Hide/Show Menu [P]`;
+        Object.assign(hideShowToggle.style, {
+            backgroundColor: "#6F42C1",
             border: "none",
             color: "#fff",
             padding: "10px",
@@ -22459,106 +22518,287 @@ class GameMod {
             marginBottom: "10px",
             fontSize: "14px",
             cursor: "pointer",
-          });
-          button.onclick = () => {
-            this[stateKey] = !this[stateKey];
-            onClick();
-            button.textContent = `${text} ${this[stateKey] ? "✅" : "❌"}`;
-            button.style.backgroundColor = this[stateKey] ? "#4CAF50" : "#FF0000";
-            updateLocalStorage();
-          };
-          return button;
-        };
-      
-        menu.appendChild(createToggleButton("Show FPS", "isFpsVisible", this.updateFpsVisibility.bind(this)));
-        menu.appendChild(createToggleButton("Show Ping", "isPingVisible", this.updatePingVisibility.bind(this)));
-        menu.appendChild(createToggleButton("Show Kills", "isKillsVisible", this.updateKillsVisibility.bind(this)));
-        menu.appendChild(createToggleButton("Clean Menu", "isClean", this.updateCleanMode.bind(this)));
-      
-        const hideShowToggle = document.createElement("button");
-        hideShowToggle.textContent = `👀 Hide/Show Menu [P]`;
-        Object.assign(hideShowToggle.style, {
-          backgroundColor: "#6F42C1",
-          border: "none",
-          color: "#fff",
-          padding: "10px",
-          borderRadius: "5px",
-          width: "100%",
-          marginBottom: "10px",
-          fontSize: "14px",
-          cursor: "pointer",
         });
         hideShowToggle.onclick = () => this.toggleMenuVisibility();
         menu.appendChild(hideShowToggle);
-      
+    
         const backgroundToggle = document.createElement("button");
         backgroundToggle.textContent = `🎨 Change Background`;
         Object.assign(backgroundToggle.style, {
-          backgroundColor: "#007BFF",
-          border: "none",
-          color: "#fff",
-          padding: "10px",
-          borderRadius: "5px",
-          width: "100%",
-          marginBottom: "10px",
-          fontSize: "14px",
-          cursor: "pointer",
+            backgroundColor: "#007BFF",
+            border: "none",
+            color: "#fff",
+            padding: "10px",
+            borderRadius: "5px",
+            width: "100%",
+            marginBottom: "10px",
+            fontSize: "14px",
+            cursor: "pointer",
         });
         backgroundToggle.onclick = () => {
-          const backgroundElement = document.getElementById("background");
-          if (!backgroundElement) {
-            alert("Element with id 'background' not found.");
-            return;
-          }
-          const choice = prompt(
-            "Enter '1' to provide a URL or '2' to upload a local image:"
-          );
-      
-          if (choice === "1") {
-            const newBackgroundUrl = prompt("Enter the URL of the new background image:");
-            if (newBackgroundUrl) {
-              backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
-              this.saveBackgroundToLocalStorage(newBackgroundUrl);
-              alert("Background updated successfully!");
+            const backgroundElement = document.getElementById("background");
+            if (!backgroundElement) {
+                alert("Element with id 'background' not found.");
+                return;
             }
-          } else if (choice === "2") {
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = "image/*";
-            fileInput.onchange = (event) => {
-              const file = event.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  backgroundElement.style.backgroundImage = `url(${reader.result})`;
-                  this.saveBackgroundToLocalStorage(file);
-                  alert("Background updated successfully!");
+            const choice = prompt(
+                "Enter '1' to provide a URL or '2' to upload a local image:"
+            );
+    
+            if (choice === "1") {
+                const newBackgroundUrl = prompt("Enter the URL of the new background image:");
+                if (newBackgroundUrl) {
+                    backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
+                    this.saveBackgroundToLocalStorage(newBackgroundUrl);
+                    alert("Background updated successfully!");
+                }
+            } else if (choice === "2") {
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*";
+                fileInput.onchange = (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            backgroundElement.style.backgroundImage = `url(${reader.result})`;
+                            this.saveBackgroundToLocalStorage(file);
+                            alert("Background updated successfully!");
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 };
-                reader.readAsDataURL(file);
-              }
-            };
-            fileInput.click();
-          }
+                fileInput.click();
+            }
         };
         menu.appendChild(backgroundToggle);
-      
+    
+        const moreSettingsButton = document.createElement("button");
+        moreSettingsButton.textContent = "⚙️ More Settings";
+        Object.assign(moreSettingsButton.style, {
+            backgroundColor: "#28A745",
+            border: "none",
+            color: "#fff",
+            padding: "10px",
+            borderRadius: "5px",
+            width: "100%",
+            fontSize: "14px",
+            cursor: "pointer",
+        });
+        moreSettingsButton.onclick = () => this.openSubMenu();
+        menu.appendChild(moreSettingsButton);
+    
         window.onload = () => {
-          const savedBackground = localStorage.getItem("backgroundImage");
-          if (savedBackground) {
-            const backgroundElement = document.getElementById("background");
-            if (backgroundElement) {
-              backgroundElement.style.backgroundImage = `url(${savedBackground})`;
+            const savedBackground = localStorage.getItem("backgroundImage");
+            if (savedBackground) {
+                const backgroundElement = document.getElementById("background");
+                if (backgroundElement) {
+                    backgroundElement.style.backgroundImage = `url(${savedBackground})`;
+                }
             }
-          }
         };
-      
+    
         const startRowTop = document.getElementById("start-row-top");
         if (startRowTop) {
-          startRowTop.appendChild(menu);
+            startRowTop.appendChild(menu);
         }
-      
+    
         this.menu = menu;
-      }
+    }
+    
+    openSubMenu() {
+        // Crear el overlay (fondo oscuro)
+        const overlay = document.createElement("div");
+        Object.assign(overlay.style, {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: "10002",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+        });
+    
+        // Crear el contenedor del menú
+        const subMenu = document.createElement("div");
+        Object.assign(subMenu.style, {
+            backgroundColor: "#333",
+            padding: "20px",
+            borderRadius: "15px",
+            width: "400px",
+            color: "#fff",
+            textAlign: "left",
+            zIndex: "10003",
+            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
+        });
+    
+        // Título del menú
+        const title = document.createElement("h2");
+        title.textContent = "Settings";
+        Object.assign(title.style, {
+            margin: "0 0 20px",
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: "#FFAE00",
+            textAlign: "center",
+        });
+        subMenu.appendChild(title);
+    
+        // Función para crear un encabezado de sección
+        const createSectionHeader = (text) => {
+            const header = document.createElement("h3");
+            header.textContent = text;
+            Object.assign(header.style, {
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#FFD700",
+                marginBottom: "10px",
+            });
+            return header;
+        };
+    
+        // Función para crear un elemento de configuración (checkbox + texto)
+        const createSettingItem = (id, label, checked) => {
+            const wrapper = document.createElement("div");
+            Object.assign(wrapper.style, {
+                display: "flex",
+                alignItems: "center",
+                padding: "10px",
+                marginBottom: "10px",
+                borderRadius: "8px",
+                backgroundColor: "#444",
+            });
+    
+            const checkbox = document.createElement("input");
+            checkbox.id = id;
+            checkbox.type = "checkbox";
+            checkbox.checked = checked;
+            Object.assign(checkbox.style, {
+                marginRight: "10px",
+                cursor: "pointer",
+            });
+    
+            const labelText = document.createElement("p");
+            labelText.textContent = label;
+            Object.assign(labelText.style, {
+                margin: "0",
+                fontSize: "16px",
+                color: "#fff",
+            });
+    
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(labelText);
+            return wrapper;
+        };
+    
+        // Sección: Rotación local
+        const localRotationHeader = createSectionHeader("Local Rotation");
+        subMenu.appendChild(localRotationHeader);
+        const localRotationItem = createSettingItem(
+            "local-rotation",
+            "Enable/disable local rotation",
+            this.isLocalRotation
+        );
+        subMenu.appendChild(localRotationItem);
+    
+        // Sección: FPS uncap
+        const fpsUncapHeader = createSectionHeader("FPS Uncap");
+        subMenu.appendChild(fpsUncapHeader);
+        const fpsUncapItem = createSettingItem(
+            "fps-uncap",
+            "Enable/disable FPS uncap",
+            this.isFpsUncapped
+        );
+        subMenu.appendChild(fpsUncapItem);
+    
+        // Sección: Interpolación de movimiento
+        const interpolationHeader = createSectionHeader("Movement Interpolation");
+        subMenu.appendChild(interpolationHeader);
+        const interpolationItem = createSettingItem(
+            "movement-interpolation",
+            "Enable/disable smooth movement",
+            this.isInterpolation
+        );
+        subMenu.appendChild(interpolationItem);
+    
+        // Botón para cerrar el menú
+        const closeButton = document.createElement("button");
+        closeButton.textContent = "Close";
+        Object.assign(closeButton.style, {
+            backgroundColor: "#FF4D4D",
+            border: "none",
+            color: "#fff",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            marginTop: "20px",
+            cursor: "pointer",
+            fontSize: "16px",
+            fontWeight: "bold",
+            transition: "background-color 0.3s ease",
+            width: "100%",
+        });
+        closeButton.onmouseenter = () => {
+            closeButton.style.backgroundColor = "#FF3333";
+        };
+        closeButton.onmouseleave = () => {
+            closeButton.style.backgroundColor = "#FF4D4D";
+        };
+        closeButton.onclick = () => {
+            document.body.removeChild(overlay);
+        };
+        subMenu.appendChild(closeButton);
+    
+        // Añadir el menú al overlay y el overlay al body
+        overlay.appendChild(subMenu);
+        document.body.appendChild(overlay);
+    
+        // Asignar eventos a los checkboxes
+        this.attachSettingsEvents();
+    }
+    
+    attachSettingsEvents() {
+        // Rotación local
+        const localRotationCheckbox = document.querySelector("#local-rotation");
+        if (localRotationCheckbox) {
+            localRotationCheckbox.addEventListener("change", (event) => {
+                this.isLocalRotation = event.target.checked;
+                window.isLocalRotation = this.isLocalRotation;
+                this.saveSettings();
+            });
+        }
+    
+        // FPS uncap
+        const fpsUncapCheckbox = document.querySelector("#fps-uncap");
+        if (fpsUncapCheckbox) {
+            fpsUncapCheckbox.addEventListener("change", (event) => {
+                this.isFpsUncapped = event.target.checked;
+                this.saveSettings();
+            });
+        }
+    
+        // Interpolación de movimiento
+        const interpolationCheckbox = document.querySelector("#movement-interpolation");
+        if (interpolationCheckbox) {
+            interpolationCheckbox.addEventListener("change", (event) => {
+                this.isInterpolation = event.target.checked;
+                window.isInterpolation = this.isInterpolation;
+                this.saveSettings();
+            });
+        }
+    }
+
+    saveSettings() {
+        const settings = {
+            "local-rotation": this.isLocalRotation,
+            "fps-uncap": this.isFpsUncapped,
+            "movement-interpolation": this.isInterpolation,
+        };
+        localStorage.setItem("gameSettings", JSON.stringify(settings));
+    }
+    
 
     toggleMenuVisibility() {
       const isVisible = this.menu.style.display !== "none";
@@ -22593,6 +22833,7 @@ class GameMod {
       }
 
       this.startPingTest();
+      this.updateFpsToggle()
       this.animationFrameCallback(() => this.startUpdateLoop());
       this.updateUiElements();
       this.updateCleanMode();
