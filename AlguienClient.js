@@ -944,7 +944,8 @@ class ra {
 }
 class aa {
     constructor() {
-        s(this, "ctx", new (window.AudioContext || window.webkitAudioContext));
+        this.ctx = null;
+        this.audioContextInitialized = false;
         s(this, "masterGainNode");
         s(this, "compressorNode");
         s(this, "reverbNode");
@@ -970,28 +971,46 @@ class aa {
         s(this, "PLAY_INTERRUPTED", "playInterrupted");
         s(this, "PLAY_FINISHED", "playFinished");
         s(this, "PLAY_FAILED", "playFailed");
-        if (Xe) {
-            const t = this.ctx.createBuffer(1, 1, 44100)
-              , i = this.ctx.createBufferSource();
-            i.buffer = t,
-            i.connect(this.ctx.destination),
-            i.start(),
-            i.disconnect(this.ctx.destination),
-            this.ctx.close(),
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)
+
+        this.reverbNode = null;
+    }
+
+    initAudioContext() {
+        if (!this.audioContextInitialized) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.audioContextInitialized = true;
+
+
+            if (this.ctx.state === 'suspended') {
+                const resumeContext = () => {
+                    this.ctx.resume().then(() => {
+                        console.log('AudioContext resumed');
+                        this.setupAudioNodes(); 
+                    });
+                    document.body.removeEventListener("mousedown", resumeContext);
+                    document.body.removeEventListener("touchend", resumeContext);
+                };
+
+                document.body.addEventListener("mousedown", resumeContext);
+                document.body.addEventListener("touchend", resumeContext);
+            } else {
+                this.setupAudioNodes();
+            }
         }
-        Wi = ia(this.ctx),
-        window.audioEngine = this,
-        this.masterGainNode = this.ctx.createGain(),
-        this.compressorNode = this.ctx.createDynamicsCompressor(),
-        this.masterGainNode.connect(this.compressorNode),
-        this.compressorNode.connect(this.ctx.destination),
-        this.reverbNode = this.ctx.createGain(),
+    }
+
+    setupAudioNodes() {
+        this.masterGainNode = this.ctx.createGain();
+        this.compressorNode = this.ctx.createDynamicsCompressor();
+        this.masterGainNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.ctx.destination);
+        this.reverbNode = this.ctx.createGain();
         this.reverbNode.connect(this.masterGainNode);
         const e = {
-            muffled: [[20, 2.8284 / 2, -6, "peaking"], [40, 2.8284 / 2, -7, "peaking"], [80, 2.8284 / 2, -10, "peaking"], [160, 2.8284 / 2, -13, "peaking"], [320, 2.8284 / 2, -22, "peaking"], [640, 2.8284 / 2, -18, "peaking"], [1280, 2.8284 / 2, -25, "peaking"], [2560, 2.8284 / 2, -10, "peaking"], [5120, 2.8284 / 2, -30, "peaking"], [10240, 2.8284 / 2, -25, "peaking"]],
-            club: [[20, 2.8284 / 2, -6, "lowshelf"], [63, 2.8284 / 2, -3, "lowshelf"], [125, 2.8284 / 2, -3, "lowshelf"], [250, 2.8284 / 2, -6, "lowshelf"], [500, 2.8284 / 2, -18, "peaking"], [1e3, 2.8284 / 2, -36, "peaking"], [2e3, 2.8284 / 2, -48, "peaking"], [4e3, 2.8284 / 2, -50, "highshelf"], [8e3, 2.8284 / 2, -50, "highshelf"], [16e3, 2.8284 / 2, -50, "highshelf"]]
+            muffled: [[20, 2.8284 / 2, -6, "peaking"], [40, 2.8284 / 2, -7, "peaking"]],
+            club: [[20, 2.8284 / 2, -6, "lowshelf"], [63, 2.8284 / 2, -3, "lowshelf"]]
         };
+
         Object.keys(e).forEach(t => {
             const i = this.ctx.createGain();
             i.gain.setValueAtTime(16, 0);
@@ -999,44 +1018,23 @@ class aa {
             let a = i;
             for (let m = 0; m < r.length; m++) {
                 const o = this.ctx.createBiquadFilter();
-                a.connect(o),
-                a = o,
-                o.frequency.setValueAtTime(r[m][0], 0),
-                o.Q.setValueAtTime(r[m][1], 0),
-                o.gain.setValueAtTime(r[m][2], 0),
-                o.type = r[m][3]
+                a.connect(o);
+                a = o;
+                o.frequency.setValueAtTime(r[m][0], 0);
+                o.Q.setValueAtTime(r[m][1], 0);
+                o.gain.setValueAtTime(r[m][2], 0);
+                o.type = r[m][3];
             }
-            a.connect(this.reverbNode),
-            this.eqNodes[t] = i
-        }
-        );
+            a.connect(this.reverbNode);
+            this.eqNodes[t] = i;
+        });
+
         for (let t = 0; t < Re; t++) {
             const i = new ri(this.ctx);
-            this.instances[t] = i
+            this.instances[t] = i;
         }
-        if (Ne = new ri(this.ctx),
-        De = new ai(Ne),
-        this.volumeOld = this.volume,
-        this.mutedOld = this.muted,
-        this.ctx.state == "suspended") {
-            const t = () => {
-                this.ctx.resume();
-                const i = this.ctx.createBufferSource();
-                i.buffer = this.ctx.createBuffer(1, 1, 22050),
-                i.connect(this.ctx.destination),
-                i.start(),
-                setTimeout( () => {
-                    this.ctx.state == "running" && (document.body.removeEventListener("mousedown", t, !1),
-                    document.body.removeEventListener("touchend", t, !1))
-                }
-                , 0)
-            }
-            ;
-            document.body.addEventListener("mousedown", t, !1),
-            document.body.addEventListener("touchend", t, !1)
-        }
-        Xe && (Vi = this.ctx.createBuffer(1, 1, 22050))
     }
+
     loadFile(e, t) {
         if (this.files[e] != null)
             return t(e),
