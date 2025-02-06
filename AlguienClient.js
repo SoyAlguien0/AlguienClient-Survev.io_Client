@@ -22035,6 +22035,9 @@ class GameMod {
         this.isLocalRotation = settings["local-rotation"] !== undefined ? settings["local-rotation"] : true;
         this.isFpsUncapped = settings["fps-uncap"] !== undefined ? settings["fps-uncap"] : true;
         this.isInterpolation = settings["movement-interpolation"] !== undefined ? settings["movement-interpolation"] : true;
+        this.pingTests = [];
+        this.pingInterval = null;
+        this.init();
 
         window.isLocalRotation = this.isLocalRotation;
         window.isInterpolation = this.isInterpolation;
@@ -22052,6 +22055,11 @@ class GameMod {
         this.setupWeaponBorderHandler();
         this.setupKeyListeners();
     }
+
+    init() {
+        this.startUpdateLoop();
+        this.pingShow();
+      }
 
     initCounter(id, visibilityKey, updateVisibilityFn) {
         this[id] = document.createElement("div");
@@ -22955,6 +22963,54 @@ class GameMod {
       this.updateBoostBars();
       this.updateHealthBars();
     }
+
+    pingShow() {
+        const serverSelect = document.getElementById("server-select-main");
+      
+        if (!serverSelect) return;
+      
+        const updateOptionWithPing = (optionElement, ping) => {
+            const pingText = ` (${ping} ms)`;
+            
+            const originalText = optionElement.textContent.replace(/\(\d+ ms\)/g, "").trim();
+            optionElement.textContent = `${originalText}${pingText}`;
+          
+            if (ping > 300) {
+              optionElement.style.color = "red";
+            } else if (ping > 200) {
+              optionElement.style.color = "orange";
+            } else if (ping > 100) {
+              optionElement.style.color = "yellow";
+            } else {
+              optionElement.style.color = "green";
+            }
+          };
+          
+          
+      
+        const servers = [
+          { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
+          { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
+          { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
+          { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
+        ];
+      
+        servers.forEach((server) => {
+          const pingTest = new PingTest(server);
+          pingTest.startPingTest();
+      
+          const interval = setInterval(() => {
+            const pingResult = pingTest.getPingResult();
+            if (pingResult.ping !== 9999 && pingResult.ping !== "Error") {
+              const optionElement = serverSelect.querySelector(`option[value="${server.region.toLowerCase()}"]`);
+              if (optionElement) {
+                updateOptionWithPing(optionElement, pingResult.ping);
+              }
+              clearInterval(interval);
+            }
+          }, 2000);
+        });
+      }
     
   }
 
@@ -23008,11 +23064,12 @@ class GameMod {
     }
 
     sendPing() {
-      if (this.test.ws.readyState === WebSocket.OPEN) {
-        this.test.sendTime = Date.now();
-        this.test.ws.send(this.ptcDataBuf);
+        if (this.test.ws && this.test.ws.readyState === WebSocket.OPEN) {
+          this.test.sendTime = Date.now();
+          this.test.ws.send(this.ptcDataBuf);
+        }
       }
-    }
+      
 
     getPingResult() {
       return {
