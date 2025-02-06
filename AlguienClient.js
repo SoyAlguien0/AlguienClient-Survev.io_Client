@@ -22583,7 +22583,7 @@ class GameMod {
         const moreSettingsButton = document.createElement("button");
         moreSettingsButton.textContent = "⚙️ More Settings";
         Object.assign(moreSettingsButton.style, {
-            backgroundColor: "#28A745",
+            backgroundColor: "#1D1616",
             border: "none",
             color: "#fff",
             padding: "10px",
