@@ -12483,9 +12483,9 @@ class ws {
         this.dirOld = h.copy(this.dir);
         this.pos = h.copy(this.netData.pos);
     
-        // Verificar si la interpolación está activa y el cambio de posición no es significativo
+
         if (window.isInterpolation && (Math.abs(this.pos.x - this.posOld.x) <= 10 && Math.abs(this.pos.y - this.posOld.y) <= 10)) {
-            // Aplicar interpolación de movimiento
+            // Movement Interpolation
             this.pos.x += (this.posOld.x - this.pos.x) * 0.5;
             this.pos.y += (this.posOld.y - this.pos.y) * 0.5;
         }
@@ -22404,7 +22404,6 @@ class GameMod {
       });
       const leftColumn = document.getElementById("left-column");
       const newsBlock = document.getElementById("news-block");
-      //scalable?
     }
 
     updateCleanMode() {
@@ -22607,8 +22606,10 @@ class GameMod {
     }
     
     openSubMenu() {
-        // Crear el overlay (fondo oscuro)
         const overlay = document.createElement("div");
+        const savedOpacity = localStorage.getItem('opacity') ?? 1;
+        const savedScale = localStorage.getItem('scale') ?? 0.8;
+    
         Object.assign(overlay.style, {
             position: "fixed",
             top: 0,
@@ -22622,7 +22623,6 @@ class GameMod {
             alignItems: "center",
         });
     
-        // Crear el contenedor del menú
         const subMenu = document.createElement("div");
         Object.assign(subMenu.style, {
             backgroundColor: "#333",
@@ -22635,19 +22635,6 @@ class GameMod {
             boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
         });
     
-        // Título del menú
-        const title = document.createElement("h2");
-        title.textContent = "Settings";
-        Object.assign(title.style, {
-            margin: "0 0 20px",
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#FFAE00",
-            textAlign: "center",
-        });
-        subMenu.appendChild(title);
-    
-        // Función para crear un encabezado de sección
         const createSectionHeader = (text) => {
             const header = document.createElement("h3");
             header.textContent = text;
@@ -22660,7 +22647,6 @@ class GameMod {
             return header;
         };
     
-        // Función para crear un elemento de configuración (checkbox + texto)
         const createSettingItem = (id, label, checked) => {
             const wrapper = document.createElement("div");
             Object.assign(wrapper.style, {
@@ -22694,37 +22680,105 @@ class GameMod {
             return wrapper;
         };
     
-        // Sección: Rotación local
-        const localRotationHeader = createSectionHeader("Local Rotation");
-        subMenu.appendChild(localRotationHeader);
-        const localRotationItem = createSettingItem(
+        const createCustomSlider = (id, min, max, step, value, onChange) => {
+            const wrapper = document.createElement("div");
+            Object.assign(wrapper.style, {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "10px",
+            });
+    
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.id = id;
+            slider.min = min;
+            slider.max = max;
+            slider.step = step;
+            slider.value = value;
+            Object.assign(slider.style, {
+                flex: "1",
+                marginRight: "10px",
+            });
+    
+            const valueLabel = document.createElement("span");
+            valueLabel.textContent = value;
+            Object.assign(valueLabel.style, {
+                minWidth: "30px",
+                textAlign: "right",
+                color: "#fff",
+            });
+    
+            slider.oninput = () => {
+                valueLabel.textContent = slider.value;
+                onChange(slider.value);
+            };
+    
+            wrapper.appendChild(slider);
+            wrapper.appendChild(valueLabel);
+            return wrapper;
+        };
+    
+        const titleClient = document.createElement("h2");
+        titleClient.textContent = "Client Settings";
+        Object.assign(titleClient.style, {
+            margin: "0 0 20px",
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: "#FFAE00",
+            textAlign: "center",
+        });
+        subMenu.appendChild(titleClient);
+    
+        subMenu.appendChild(createSectionHeader("Local Rotation"));
+        subMenu.appendChild(createSettingItem(
             "local-rotation",
             "Enable/disable local rotation",
             this.isLocalRotation
-        );
-        subMenu.appendChild(localRotationItem);
+        ));
     
-        // Sección: FPS uncap
-        const fpsUncapHeader = createSectionHeader("FPS Uncap");
-        subMenu.appendChild(fpsUncapHeader);
-        const fpsUncapItem = createSettingItem(
+        subMenu.appendChild(createSectionHeader("FPS Uncap"));
+        subMenu.appendChild(createSettingItem(
             "fps-uncap",
             "Enable/disable FPS uncap",
             this.isFpsUncapped
-        );
-        subMenu.appendChild(fpsUncapItem);
+        ));
     
-        // Sección: Interpolación de movimiento
-        const interpolationHeader = createSectionHeader("Movement Interpolation");
-        subMenu.appendChild(interpolationHeader);
-        const interpolationItem = createSettingItem(
+        subMenu.appendChild(createSectionHeader("Movement Interpolation"));
+        subMenu.appendChild(createSettingItem(
             "movement-interpolation",
             "Enable/disable smooth movement",
             this.isInterpolation
-        );
-        subMenu.appendChild(interpolationItem);
+        ));
     
-        // Botón para cerrar el menú
+        const titleUI = document.createElement("h2");
+        titleUI.textContent = "UI Settings";
+        Object.assign(titleUI.style, {
+            margin: "20px 0 20px",
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: "#FFAE00",
+            textAlign: "center",
+        });
+        subMenu.appendChild(titleUI);
+    
+        subMenu.appendChild(createSectionHeader("Opacity"));
+        subMenu.appendChild(createCustomSlider(
+            "opacity-slider",
+            0, 1, 0.01,
+            savedOpacity,
+            (value) => localStorage.setItem('opacity', value)
+        ));
+    
+        subMenu.appendChild(createSectionHeader("Scale"));
+        subMenu.appendChild(createCustomSlider(
+            "scale-slider",
+            0.5, 1, 0.01,
+            savedScale,
+            (value) => localStorage.setItem('scale', value)
+        ));
+    
+
         const closeButton = document.createElement("button");
         closeButton.textContent = "Close";
         Object.assign(closeButton.style, {
@@ -22751,16 +22805,62 @@ class GameMod {
         };
         subMenu.appendChild(closeButton);
     
-        // Añadir el menú al overlay y el overlay al body
         overlay.appendChild(subMenu);
         document.body.appendChild(overlay);
     
-        // Asignar eventos a los checkboxes
         this.attachSettingsEvents();
     }
     
+    
+    customUiElements(){
+        let scale = parseFloat(localStorage.getItem('scale')) || 0.8;
+        let opacity = parseFloat(localStorage.getItem('opacity')) || 1;
+        
+        const healthBoost = document.getElementById('ui-bottom-center-0');
+        healthBoost.style.transform = `translateX(-50%) scale(${scale})`;
+        healthBoost.style.opacity = opacity;
+        healthBoost.style.bottom = window.innerWidth > 1200 ? `-${((1-scale) * 20)+2}px` : '';
+
+        const weapon = document.getElementById('ui-weapon-container');
+        weapon.style.scale = scale;
+        weapon.style.opacity = opacity;
+        weapon.style.transformOrigin = "right";
+
+        const inventory = document.getElementById('ui-right-center');
+        inventory.style.scale = scale*1.1;
+        inventory.style.opacity = opacity;
+        inventory.style.marginTop = `-${(1 - scale) * 100}px`;
+
+        const info = document.getElementById('ui-top-left');
+        info.style.transformOrigin = 'top left';
+        info.style.scale = scale*1.1;
+        info.style.opacity = opacity;
+
+        const players = document.getElementById('ui-leaderboard-wrapper');
+        players.style.scale = scale;
+        players.style.opacity = opacity;
+        players.style.transformOrigin = 'top right';
+
+        const killfeed = document.getElementById('ui-killfeed-wrapper');
+        killfeed.style.scale = scale;
+        killfeed.style.opacity = opacity;
+        killfeed.style.transformOrigin = "right";
+
+        const ammo = document.getElementById('ui-equipped-ammo-wrapper');
+        ammo.style.opacity = opacity;
+        ammo.style.transform = `translateX(-50%) scale(${scale})`;
+        ammo.style.bottom = 62-((1-scale)*20);
+
+        const gears = document.getElementById('ui-bottom-center-right');
+        gears.style.opacity = opacity;
+        gears.style.scale = scale; 
+
+        const scopes = document.getElementById('ui-top-center-scopes');
+        scopes.style.opacity = opacity;
+        scopes.style.scale = scale; 
+    }
+    
     attachSettingsEvents() {
-        // Rotación local
         const localRotationCheckbox = document.querySelector("#local-rotation");
         if (localRotationCheckbox) {
             localRotationCheckbox.addEventListener("change", (event) => {
@@ -22770,7 +22870,6 @@ class GameMod {
             });
         }
     
-        // FPS uncap
         const fpsUncapCheckbox = document.querySelector("#fps-uncap");
         if (fpsUncapCheckbox) {
             fpsUncapCheckbox.addEventListener("change", (event) => {
@@ -22779,7 +22878,6 @@ class GameMod {
             });
         }
     
-        // Interpolación de movimiento
         const interpolationCheckbox = document.querySelector("#movement-interpolation");
         if (interpolationCheckbox) {
             interpolationCheckbox.addEventListener("change", (event) => {
@@ -22788,7 +22886,24 @@ class GameMod {
                 this.saveSettings();
             });
         }
+    
+        const opacitySlider = document.querySelector("#opacity-slider");
+        if (opacitySlider) {
+            opacitySlider.addEventListener("input", (event) => {
+                localStorage.setItem("opacity", event.target.value);
+                this.customUiElements();
+            });
+        }
+    
+        const scaleSlider = document.querySelector("#scale-slider");
+        if (scaleSlider) {
+            scaleSlider.addEventListener("input", (event) => {
+                localStorage.setItem("scale", event.target.value);
+                this.customUiElements();
+            });
+        }
     }
+    
 
     saveSettings() {
         const settings = {
@@ -22909,3 +23024,4 @@ class GameMod {
 
   const gameMod = new GameMod();
 })();
+
