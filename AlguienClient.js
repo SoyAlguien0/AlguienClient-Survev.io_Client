@@ -22942,7 +22942,8 @@ class GameMod {
         this.kills = this.getKills();
 
         if (this.isFpsVisible && this.fpsCounter) {
-          this.fpsCounter.textContent = `FPS: ${this.fps}`;
+            //temporal fix fps counter
+          this.fpsCounter.textContent = `FPS: ${this.fps/2}`;
         }
 
         if (this.isKillsVisible && this.killsCounter) {
