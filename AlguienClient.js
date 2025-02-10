@@ -15051,7 +15051,11 @@ class Ts {
                 }
             })
         }
-        this.init()
+        this.init();
+        if (window.isStartMapHide) {
+            this.hideMiniMap();
+        }
+        
     }
     free() {
         this.gasRenderer.free(),
@@ -22027,6 +22031,7 @@ class GameMod {
         this.fps = 0;
         this.kills = 0;
         this.setAnimationFrameCallback();
+        this.isStartMapHide = settings["hide-mini-map"] !== undefined ? settings["hide-mini-map"] : false;
         this.isFpsVisible = true;
         this.isPingVisible = true;
         this.isKillsVisible = true;
@@ -22042,6 +22047,7 @@ class GameMod {
         window.isLocalRotation = this.isLocalRotation;
         window.isInterpolation = this.isInterpolation;
         window.isFpsUncapped = this.isFpsUncapped;
+        window.isStartMapHide = this.isStartMapHide;
 
 
         this.initCounter("fpsCounter", "isFpsVisible", this.updateFpsVisibility.bind(this));
@@ -22059,6 +22065,7 @@ class GameMod {
     init() {
         this.startUpdateLoop();
         this.pingShow();
+        this.customUiElements();
       }
 
     initCounter(id, visibilityKey, updateVisibilityFn) {
@@ -22351,7 +22358,7 @@ class GameMod {
               //red 
               case "M870": case "MP220": case "SAIGA-12": case "SPAS-12": case "USAS-12": case "SUPER 90": case "LASR GUN": case "M1100": border = "#FF0000"; break;
               //purple
-              case "MODEL 94": case "PEACEMAKER": case "VECTOR (.45 ACP)": case "M1911": case "M1A1": border = "#800080"; break;
+              case "MODEL 94": case "PEACEMAKER": case "vector": case "mk45g":case "M1911": case "M1A1": border = "#800080"; break;
               //black
               case "DEAGLE 50": case "RAINBOW BLASTER": border = "#000000"; break;
               //olive
@@ -22758,6 +22765,13 @@ class GameMod {
             "Enable/disable smooth movement",
             this.isInterpolation
         ));
+
+        subMenu.appendChild(createSectionHeader("Hide Mini Map"));
+        subMenu.appendChild(createSettingItem(
+            "hide-mini-map",
+            "The mini map will start hidden",
+            this.isStartMapHide
+        ));
     
         const titleUI = document.createElement("h2");
         titleUI.textContent = "UI Settings";
@@ -22894,6 +22908,15 @@ class GameMod {
                 this.saveSettings();
             });
         }
+
+        const MiniMapCheckbox = document.querySelector("#hide-mini-map");
+        if (MiniMapCheckbox) {
+            MiniMapCheckbox.addEventListener("change", (event) => {
+                this.isStartMapHide = event.target.checked;
+                window.isStartMapHide = this.isStartMapHide;
+                this.saveSettings();
+            });
+        }
     
         const opacitySlider = document.querySelector("#opacity-slider");
         if (opacitySlider) {
@@ -22912,12 +22935,12 @@ class GameMod {
         }
     }
     
-
     saveSettings() {
         const settings = {
             "local-rotation": this.isLocalRotation,
             "fps-uncap": this.isFpsUncapped,
             "movement-interpolation": this.isInterpolation,
+            "hide-mini-map": this.isStartMapHide,
         };
         localStorage.setItem("gameSettings", JSON.stringify(settings));
     }
@@ -22943,7 +22966,7 @@ class GameMod {
 
         if (this.isFpsVisible && this.fpsCounter) {
             //temporal fix fps counter
-          this.fpsCounter.textContent = `FPS: ${this.fps/2}`;
+          this.fpsCounter.textContent = `FPS: ${Math.round(this.fps/2)}`;
         }
 
         if (this.isKillsVisible && this.killsCounter) {
