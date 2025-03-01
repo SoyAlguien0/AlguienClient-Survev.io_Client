@@ -12398,32 +12398,32 @@ const { i: Pe, $: c, C: J, T: H, S: ee, G: pe, a: ur, b: $e, R: dr, c: pr, P: Et
                 return this.perkTypes.includes(e)
             }
             _0x62(e, t, i, r, a, l, s, m, d, h, p, w, f) {
-                const S = B[this._0x73._0x128],
-                      x = this.__id == h,
-                      y = t.getPlayerById(h);
-            
-                this._0x124 = n.copy(this._0x63);
-                this._0x126 = n.copy(this._0x125);
-                this._0x63 = n.copy(this._0x73._0x63);
-            
-                if (window.isInterpolation && (Math.abs(this._0x63.x - this._0x124.x) <= 10 && Math.abs(this._0x63.y - this._0x124.y) <= 10)) {
-                    // Movement Interpolation
-                    this._0x63.x += (this._0x124.x - this._0x63.x) * 0.5;
-                    this._0x63.y += (this._0x124.y - this._0x63.y) * 0.5;
-                }
-            
-                this._0x125 = n.copy(this._0x73._0x125);
-                this._0x83 = this._0x73._0x83;
-                this._0x88 = this._0x73._0x88;
-                this._0x90 = this._0x73._0x140 * R.player.radius;
-            
-                if (!z.eqAbs(this._0x90, this._0x123)) {
-                    const q = this._0x90 - this._0x123;
-                    let N = Math.abs(q) > 1e-4 ? q * e * 6 : q;
-                    this.isNew && (N = q);
-                    this._0x123 += N;
-                    this.visualsDirty = !0;
-                }
+    const S = B[this._0x73._0x128],
+          x = this.__id == h,
+          y = t.getPlayerById(h);
+
+    this._0x124 = n.copy(this._0x63);
+    this._0x126 = n.copy(this._0x125);
+    this._0x63 = n.copy(this._0x73._0x63);
+
+    if (window.isInterpolation && (Math.abs(this._0x63.x - this._0x124.x) <= 10 && Math.abs(this._0x63.y - this._0x124.y) <= 10)) {
+        // Movement Interpolation
+        this._0x63.x += (this._0x124.x - this._0x63.x) * 0.5;
+        this._0x63.y += (this._0x124.y - this._0x63.y) * 0.5;
+    }
+
+    this._0x125 = n.copy(this._0x73._0x125);
+    this.layer = this._0x73._0x83;
+    this.downed = this._0x73._0x88;
+    this._0x90 = this._0x73._0x140 * R.player.radius;
+
+    if (!z.eqAbs(this._0x90, this._0x123)) {
+        const q = this._0x90 - this._0x123;
+        let N = Math.abs(q) > 1e-4 ? q * e * 6 : q;
+        this.isNew && (N = q);
+        this._0x123 += N;
+        this.visualsDirty = !0;
+    }
                 if (x) {
                     const q = s._0x70(n.create(s._0x66, 0))
                         , N = n.sub(q, s._0x63);
