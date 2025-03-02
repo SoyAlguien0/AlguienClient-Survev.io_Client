@@ -12955,7 +12955,7 @@ const { i: Pe, $: c, C: J, T: H, S: ee, G: pe, a: ur, b: $e, R: dr, c: pr, P: Et
                 mouseY - window.innerHeight / 2,
                 mouseX - window.innerWidth / 2,
             );
-            } else if (window.activeId != this.__id) {
+            } else {
                 this.bodyContainer.rotation = -Math.atan2(this._0x125.y, this._0x125.x);
             }
             }
