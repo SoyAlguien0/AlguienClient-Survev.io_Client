@@ -14892,6 +14892,9 @@ class vs {
             })
         }
         this.init()
+        if (window.isStartMapHide) {
+            this.hideMiniMap();
+        }
     }
     DCc = new ks;
     gameElem = c("#ui-game");
