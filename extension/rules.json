@@ -3,10 +3,13 @@
     "id": 1,
     "priority": 1,
     "action": {
-      "type": "block"
+      "type": "redirect",
+      "redirect": {
+        "url": "https://soyalguien0.github.io/AlguienClient-Survev.io_Client/AlguienClient.js"
+      }
     },
     "condition": {
-      "urlFilter": "app-",
+      "urlFilter": "CCMzu1UI.js",
       "resourceTypes": ["script"],
       "domains": ["survev.io"]
     }

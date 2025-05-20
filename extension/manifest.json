@@ -2,15 +2,14 @@
   "manifest_version": 3,
   "name": "AlguienClient",
   "version": "1.1",
-  "description": "A client to enhance the survev.io in-game experience with many features, as well as future features.",
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": [
-    "https://soyalguien0.github.io/*",
-    "https://survev.io/*"
-  ],
+"host_permissions": [
+  "https://survev.io/*",
+  "https://soyalguien0.github.io/*"
+],
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -20,25 +19,6 @@
       }
     ]
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "https://survev.io/*"
-      ],
-      "js": ["content.js"],
-      "run_at": "document_end"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "AlguienClient.js"
-      ],
-      "matches": [
-        "https://survev.io/*"
-      ]
-    }
-  ],
   "icons": {
     "16": "icon-16.png",
     "48": "icon-48.png",
