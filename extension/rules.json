@@ -9,7 +9,7 @@
       }
     },
     "condition": {
-      "urlFilter": "||survev.io/DC5e4XBt.js",
+      "urlFilter": "||survev.io/js/DC5e4XBt.js",
       "resourceTypes": ["script"],
       "domains": ["survev.io"]
     }
