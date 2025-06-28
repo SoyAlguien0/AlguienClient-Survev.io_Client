@@ -5013,6 +5013,10 @@ class la {
         return null
     }
 }
+
+//input manager
+const inputManager = new la(document.body);
+
 var X = (l => (l[l.Backspace = 8] = "Backspace",
 l[l.Enter = 13] = "Enter",
 l[l.Shift = 16] = "Shift",
