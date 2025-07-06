@@ -3,22 +3,24 @@
   "name": "AlguienClient",
   "version": "1.1",
   "permissions": [
+    "storage",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-"host_permissions": [
-  "https://survev.io/*",
-  "https://soyalguien0.github.io/*"
-],
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "ruleset_1",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
+  "host_permissions": [
+    "https://survev.io/*",
+    "https://soyalguien0.github.io/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://survev.io/"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
   "icons": {
     "16": "icon-16.png",
     "48": "icon-48.png",
