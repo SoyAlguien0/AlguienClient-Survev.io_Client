@@ -1,0 +1,25 @@
+{
+  "name": "alguienclient",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoyAlguien0/AlguienClient.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/SoyAlguien0/AlguienClient/issues"
+  },
+  "homepage": "https://github.com/SoyAlguien0/AlguienClient#readme",
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2"
+  }
+}
