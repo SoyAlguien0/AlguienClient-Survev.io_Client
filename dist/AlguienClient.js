@@ -83,11 +83,8 @@ class GameMod {
         this.startUpdateLoop();
         this.setupWeaponBorderHandler();
         this.setupKeyListeners();
-    }
-    init() {
-        this.startUpdateLoop();
-        this.pingShow();
-        this.customUiElements();
+        if (!this.isMenuVisible)
+            this.toggleMenuVisibility(true);
     }
     getSettings() {
         return JSON.parse(localStorage.getItem("gameSettings") || "{}");
@@ -217,6 +214,7 @@ class GameMod {
                 this.isFpsVisible = savedSettings.isFpsVisible ?? this.isFpsVisible;
                 this.isPingVisible = savedSettings.isPingVisible ?? this.isPingVisible;
                 this.isKillsVisible = savedSettings.isKillsVisible ?? this.isKillsVisible;
+                this.isMenuVisible = savedSettings.isMenuVisible ?? this.isMenuVisible;
                 this.isClean = savedSettings.isClean ?? this.isClean;
             }
         }
@@ -224,6 +222,14 @@ class GameMod {
         this.updateKillsVisibility();
         this.updateFpsVisibility();
         this.updatePingVisibility();
+    }
+    updateLocalStorage() {
+        localStorage.setItem("userSettings", JSON.stringify({
+            isFpsVisible: this.isFpsVisible,
+            isPingVisible: this.isPingVisible,
+            isKillsVisible: this.isKillsVisible,
+            isClean: this.isClean,
+        }));
     }
     updateHealthBars() {
         const healthBars = document.querySelectorAll("#ui-health-container");
@@ -406,25 +412,29 @@ class GameMod {
             startMenuContainer.insertBefore(playerOptions, firstChild);
         }
         const teamMenu = document.getElementById("team-menu");
-        if (teamMenu)
-            teamMenu.style.height = "355px";
         const menuBlocks = document.querySelectorAll(".menu-block");
-        menuBlocks.forEach((block) => { block.style.maxHeight = "355px"; });
+        if (teamMenu.style.display === "block") {
+            teamMenu.style.height = "355px";
+            menuBlocks.forEach((block) => { block.style.maxHeight = "355px"; });
+        }
+        else {
+            menuBlocks.forEach((block) => { block.style.maxHeight = "325px"; });
+        }
     }
     updateCleanMode() {
         const leftColumn = document.getElementById("left-column");
-        const newsBlock = document.getElementById("news-block");
+        const rightColumn = document.getElementById("right-column");
         if (this.isClean) {
             if (leftColumn)
                 leftColumn.style.display = "none";
-            if (newsBlock)
-                newsBlock.style.display = "none";
+            if (rightColumn)
+                rightColumn.style.display = "none";
         }
         else {
             if (leftColumn)
                 leftColumn.style.display = "block";
-            if (newsBlock)
-                newsBlock.style.display = "block";
+            if (rightColumn)
+                rightColumn.style.display = "block";
         }
     }
     setupKeyListeners() {
@@ -458,14 +468,6 @@ class GameMod {
             color: "#FFAE00",
         });
         menu.appendChild(title);
-        const updateLocalStorage = () => {
-            localStorage.setItem("userSettings", JSON.stringify({
-                isFpsVisible: this.isFpsVisible,
-                isPingVisible: this.isPingVisible,
-                isKillsVisible: this.isKillsVisible,
-                isClean: this.isClean,
-            }));
-        };
         this.loadLocalStorage();
         const createToggleButton = (text, stateKey, onClick) => {
             const button = document.createElement("button");
@@ -488,7 +490,7 @@ class GameMod {
                 const newState = !!this[stateKey];
                 button.textContent = `${text} ${newState ? "✅" : "❌"}`;
                 button.style.backgroundColor = newState ? "#4CAF50" : "#FF0000";
-                updateLocalStorage();
+                this.updateLocalStorage();
             };
             return button;
         };
@@ -810,11 +812,15 @@ class GameMod {
             });
         }
     }
-    toggleMenuVisibility() {
+    toggleMenuVisibility(noUpdate) {
         if (!this.menu)
             return;
         const isVisible = this.menu.style.display !== "none";
         this.menu.style.display = isVisible ? "none" : "block";
+        if (noUpdate)
+            return;
+        this.isMenuVisible = !this.isMenuVisible;
+        this.updateLocalStorage();
     }
     startUpdateLoop() {
         let lastFrameTime = performance.now();
