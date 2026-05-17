@@ -228,6 +228,7 @@ class GameMod {
             isFpsVisible: this.isFpsVisible,
             isPingVisible: this.isPingVisible,
             isKillsVisible: this.isKillsVisible,
+            isMenuVisible: this.isMenuVisible,
             isClean: this.isClean,
         }));
     }
