@@ -1,96 +1,156 @@
 (() => {
-  // src/consts.ts
-  var TeamColors = /* @__PURE__ */ ((TeamColors2) => {
-    TeamColors2["YELLOW"] = "#ff0";
-    TeamColors2["BLUE"] = "#00f";
-    TeamColors2["RED"] = "#ff0000";
-    TeamColors2["PURPLE"] = "#f0f";
-    TeamColors2["CYAN"] = "#0ff";
-    TeamColors2["ORANGE"] = "#ff5400";
-    return TeamColors2;
-  })(TeamColors || {});
-
   // src/AlguienClient.ts
   var oldCall = Function.prototype.call;
   var updateManager = null;
   var gameManager = null;
   var uiManager = null;
-  var pixi = null;
+  var playerManager = null;
+  var activePlayerId = 0;
+  var groupSize = 0;
   var initialized = false;
   var hideMap = true;
-  var foundGameManager = false;
-  function getTeamMembersInfo() {
-    const teamPlayers = [];
-    let teamMembers = document.querySelectorAll(".ui-team-member");
-    for (const teamMember of teamMembers) {
-      const teammateText = teamMember.querySelector(".ui-team-member-name")?.textContent;
-      if (teammateText == "") break;
-      const teammateColor = teamMember.querySelector(".ui-team-member-color").classList.item(1)?.split("-")[2].toUpperCase();
-      teamPlayers.push({
-        textColor: TeamColors[teammateColor],
-        name: teammateText
+  var gameInitialized = false;
+  var getTeamMembersInfo = () => {
+    const teamPlayers2 = [];
+    activePlayerId = getActiveId(gameManager);
+    groupSize = getGroupSize();
+    if (!playerManager.getPlayerInfo(activePlayerId)) return;
+    let groupId = playerManager.getPlayerInfo(activePlayerId).groupId;
+    if (!playerManager.getGroupInfo(groupId)) return;
+    const teamMembersId = playerManager.getGroupInfo(groupId).playerIds;
+    for (const id of teamMembersId) {
+      const teammateName = playerManager.getPlayerInfo(id).name;
+      const teammateColor = playerManager.getGroupColor(id);
+      teamPlayers2.push({
+        id,
+        name: teammateName,
+        textColor: teammateColor
       });
     }
-    return teamPlayers;
-  }
-  function scanNames(node, teamPlayers) {
-    if (!node) return;
-    let found = false;
-    teamPlayers.forEach((t) => {
-      if (node.text != void 0 && node.text == t.name) {
-        node.style.fill = t.textColor;
-        found = true;
+    return teamPlayers2;
+  };
+  var getGroupSize = () => {
+    activePlayerId = getActiveId(gameManager);
+    if (!playerManager.getPlayerInfo(activePlayerId)) return;
+    let groupId = playerManager.getPlayerInfo(activePlayerId).groupId;
+    if (!playerManager.getGroupInfo(groupId)) return;
+    return playerManager.getGroupInfo(groupId).playerIds.length;
+  };
+  var updateTextStyleNames = (playersArray2) => {
+    for (const player of playersArray2) {
+      for (const teamPlayerInfo of teamPlayers) {
+        if (teamPlayerInfo.id != player.__id) continue;
+        player.nameText.style.fill = teamPlayerInfo.textColor;
       }
-    });
-    if (found) return;
-    if (node.children) {
-      for (const c of node.children) scanNames(c, teamPlayers);
+    }
+  };
+  var updateTextStyleNamesDead = (deadBodiesArray2) => {
+    for (const deadBody of deadBodiesArray2) {
+      const player = teamPlayers.find(
+        (p) => p.id === deadBody.playerId
+      );
+      deadBody.nameText.style.fill = player?.textColor ?? 12237498;
+    }
+  };
+  function findObject(gameManager2, object, anonymousObject) {
+    if (!anonymousObject) {
+      for (const value of Object.values(gameManager2)) {
+        if (!value || typeof value !== "object") continue;
+        if (value[object]) {
+          return value[object];
+        }
+      }
+      return null;
+    } else {
+      for (const value of Object.values(gameManager2)) {
+        if (!value || typeof value !== "object") continue;
+        if (value[object]) {
+          return value;
+        }
+      }
+      return null;
     }
   }
-  function findUiManager(game) {
-    for (const value of Object.values(game)) {
-      if (!value || typeof value !== "object")
-        continue;
-      if (value.actionSeq && value.aimLineButton) {
-        foundGameManager = true;
-        return value;
-      }
+  var playersArray = null;
+  var findPlayersArray = (gameManager2) => {
+    const playerPool = findObject(gameManager2, "playerPool", false);
+    for (const value of Object.values(playerPool)) {
+      if (value && typeof value === "object" && Array.isArray(value)) return value;
     }
     return null;
-  }
-  var update = (gameInitialized, isTeamMode) => {
-    if (!gameInitialized) {
-      hideMap = true;
-    } else if (gameInitialized && !foundGameManager) {
-      uiManager = findUiManager(gameManager);
+  };
+  var deadBodiesArray = null;
+  var findDeadBodiesArray = (gameManager2) => {
+    const playerPool = findObject(gameManager2, "deadBodyPool", false);
+    for (const value of Object.values(playerPool)) {
+      if (value && typeof value === "object" && Array.isArray(value)) return value;
     }
-    if (gameInitialized && isTeamMode) {
-      const teamPlayers = getTeamMembersInfo();
-      scanNames(pixi.stage, teamPlayers);
+    return null;
+  };
+  var getActiveId = (gameManager2) => {
+    const values = Object.values(gameManager2);
+    for (const value of values) {
+      if (!value || typeof value !== "object") continue;
+      if (value.active && value.__id) return value.__id;
     }
-    if (foundGameManager && hideMap) {
+    return null;
+  };
+  var teamPlayers = null;
+  var update = (gameInitialized2, isTeamMode) => {
+    if (gameInitialized2 && isTeamMode) {
+      if (getGroupSize() != groupSize || getActiveId(gameManager) != activePlayerId) {
+        teamPlayers = getTeamMembersInfo();
+      }
+      const players = playersArray ? playersArray : findPlayersArray(gameManager);
+      if (teamPlayers && players.length > 1) {
+        updateTextStyleNames(players);
+      }
+      const deadBodies = deadBodiesArray ? deadBodiesArray : findDeadBodiesArray(gameManager);
+      if (teamPlayers && deadBodies.length > 0) {
+        updateTextStyleNamesDead(deadBodies);
+      }
+    }
+    if (gameInitialized2 && hideMap) {
       uiManager.cycleVisibilityMode();
       uiManager.getMinimapSize = () => {
         return 128;
       };
       uiManager.getMinimapMargin = () => {
-        return uiManager.getMinimapSize() / 2;
+        return 128 / 2;
       };
       hideMap = false;
+    }
+  };
+  var init = (gameInitialized2, isTeamMode) => {
+    uiManager = findObject(gameManager, "killLeaderCount", true);
+    if (gameInitialized2 && isTeamMode) {
+      playerManager = findObject(gameManager, "teamInfo", true);
+      teamPlayers = getTeamMembersInfo();
+    }
+    if (!gameInitialized2) {
+      activePlayerId = 0;
+      groupSize = 0;
+      teamPlayers = null;
+      hideMap = true;
+      playersArray = null;
+      deadBodiesArray = null;
     }
   };
   Function.prototype.call = function(...args) {
     if (!initialized && args[0]?.pixi && args[0]?.game) {
       updateManager = args[0];
       gameManager = updateManager.game;
-      pixi = updateManager.pixi;
       initialized = true;
-      console.log("injected Client");
+      console.log("Client Injected");
     }
     const isUpdateManager = updateManager == args[0];
-    if (isUpdateManager) {
+    if (isUpdateManager && initialized) {
+      const gameStateChanged = gameInitialized != gameManager.initialized;
       const isTeamMode = gameManager.teamMode > 1;
-      const gameInitialized = initialized && gameManager.initialized;
+      if (gameStateChanged) {
+        gameInitialized = gameManager.initialized;
+        init(gameInitialized, isTeamMode);
+      }
       update(gameInitialized, isTeamMode);
     }
     return oldCall.apply(this, args);
