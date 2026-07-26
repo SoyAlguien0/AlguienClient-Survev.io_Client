@@ -1,4 +1,5 @@
 import { TeamPlayer } from "./types/TeamPlayer.js";
+import { applyUiSettings, setSettings } from "./ui.js";
 
 const oldCall = Function.prototype.call;
 let updateManager:any = null;
@@ -43,8 +44,6 @@ const getGroupSize = () => {
     if (!playerManager.getGroupInfo(groupId)) return;
     return playerManager.getGroupInfo(groupId).playerIds.length;
 }
-
-//.ui-bottom-center-0 health
 
 const updateTextStyleNames = (playersArray: any) => {
     for (const player of playersArray) {
@@ -135,9 +134,9 @@ const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
         }
     }
 
-        if (gameInitialized && hideMap) {
-            uiManager.cycleVisibilityMode();
-            uiManager.getMinimapSize = ()=>{
+    if (gameInitialized && hideMap) {
+        uiManager.cycleVisibilityMode();
+        uiManager.getMinimapSize = ()=>{
             return 128;
         }
         //TODO: consts
@@ -150,6 +149,7 @@ const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
 
 const init = (gameInitialized:boolean, isTeamMode:boolean) => {
     uiManager = findObject(gameManager, 'killLeaderCount', true);
+    applyUiSettings();
 
     if (gameInitialized && isTeamMode) {
         playerManager = findObject(gameManager, 'teamInfo', true);
@@ -188,3 +188,5 @@ Function.prototype.call = function (...args) {
     }
     return oldCall.apply(this, args);
 };
+
+setSettings();
