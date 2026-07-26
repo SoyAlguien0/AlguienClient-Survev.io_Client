@@ -136,13 +136,6 @@ const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
 
     if (gameInitialized && hideMap) {
         uiManager.cycleVisibilityMode();
-        uiManager.getMinimapSize = ()=>{
-            return 128;
-        }
-        //TODO: consts
-        uiManager.getMinimapMargin = ()=>{
-            return 128/2;
-        }
         hideMap = false;
     }
 }
