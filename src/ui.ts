@@ -1,4 +1,4 @@
-const uiElements = document.querySelectorAll<HTMLElement>("#ui-bottom-center-0,#ui-weapon-container,#ui-right-center,"
+const uiElements = document.querySelectorAll<HTMLElement>("#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center,"
                                     +"#ui-top-left,#ui-leaderboard-wrapper,#ui-killfeed-wrapper,#ui-equipped-ammo-wrapper,"
                                     +"#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper,"
                                     +"#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter");
