@@ -58,21 +58,21 @@ const createSetting = (settingText:string, min:string = "0", max:string = "100")
     quitButton?.before(createSettingElement(settingText, min, max));
 }
 
-const updateSettings = (inputElementEvent:HTMLInputElement) => {
-    const inputElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
-    for (const inputElement of inputElements) {
-        if (inputElement.dataset.setting == inputElementEvent.dataset.setting) {
-            inputElement.value = inputElementEvent.value;
+const updateSettings = (triggeredSettingElement:HTMLInputElement) => {
+    const settingElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
+    for (const settingElement of settingElements) {
+        if (settingElement.dataset.setting == triggeredSettingElement.dataset.setting) {
+            settingElement.value = triggeredSettingElement.value;
         }
     }
-    storeSettings(inputElements);
+    storeSettings(settingElements);
 }
 
-const storeSettings = (inputElements:NodeListOf<HTMLInputElement>) => {
+const storeSettings = (settingElements:NodeListOf<HTMLInputElement>) => {
     let clientSettings:any = {};
 
-    for (const inputElement of inputElements) {
-        clientSettings[inputElement.dataset.setting!] = inputElement.value;
+    for (const settingElement of settingElements) {
+        clientSettings[settingElement.dataset.setting!] = settingElement.value;
     }
 
     localStorage.setItem('client settings', JSON.stringify(clientSettings));
@@ -80,10 +80,10 @@ const storeSettings = (inputElements:NodeListOf<HTMLInputElement>) => {
 
 const loadSettings = () => {
     const clientSettings = JSON.parse(localStorage.getItem('client settings') || '');
-    const inputElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
-    for (const inputElement of inputElements) {
-        if (clientSettings[inputElement.dataset.setting!]) {
-            inputElement.value = clientSettings[inputElement.dataset.setting!];
+    const settingElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
+    for (const settingElement of settingElements) {
+        if (clientSettings[settingElement.dataset.setting!]) {
+            settingElement.value = clientSettings[settingElement.dataset.setting!];
         }
     }
 }
