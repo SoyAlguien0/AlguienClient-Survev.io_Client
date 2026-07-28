@@ -15,12 +15,13 @@ export const applyUiSettings = ()=> {
 export const setSettings = ()=> {
     document.querySelector<HTMLElement>('#ui-game-menu')!.style.height = 'fit-content';
     addSettingOptions();
+    initCounters();
     loadSettings();
 }
 
 export const addSettingOptions = ()=> {
-    createSetting('Oppacity');
-    createSetting('Scale', '70');
+    addSetting('Oppacity');
+    addSetting('Scale', '70');
 }
 
 const createSettingElement = (settingText:string, min:string, max:string)=> {
@@ -50,7 +51,37 @@ const createSettingElement = (settingText:string, min:string, max:string)=> {
     return setting;
 }
 
-const createSetting = (settingText:string, min:string = "0", max:string = "100")=> {
+const createCounterElement = (name:string) => {
+    const counter = document.createElement("div");
+    counter.id = 'counter-'+name;
+    counter.textContent = name.toUpperCase()+": 0";
+    Object.assign(counter.style, {
+        color: "white",
+        backgroundColor: "rgba(0, 0, 0, 0.2)",
+        padding: "5px 10px",
+        marginTop: "10px",
+        borderRadius: "5px",
+        fontFamily: "Arial, sans-serif",
+        fontSize: "18px",
+        zIndex: "2",
+        pointerEvents: "none",
+    })
+
+    return counter;
+}
+
+const addCounter = (name:string)=> {
+    const topLeft = document.querySelector('#ui-top-left');
+    const counter = createCounterElement(name);
+
+    topLeft?.append(counter);
+}
+
+const initCounters = ()=> {
+    addCounter('fps');
+}
+
+const addSetting = (settingText:string, min:string = "0", max:string = "100")=> {
     const settingsLinks = document.querySelector('#settings-links');
     settingsLinks?.before(createSettingElement(settingText, min, max));
 
