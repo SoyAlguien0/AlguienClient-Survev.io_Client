@@ -3,6 +3,8 @@ const uiElements = document.querySelectorAll<HTMLInputElement>("#ui-boost-counte
                                     +"#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper,"
                                     +"#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter");
 
+let fpsCounter:any = null;
+
 export const applyUiSettings = ()=> {
     const opacityValue = document.querySelector<HTMLInputElement>('.slider-oppacity > input')?.value;
     const scaleValue = document.querySelector<HTMLInputElement>('.slider-scale > input')?.value;
@@ -79,7 +81,29 @@ const addCounter = (name:string)=> {
 
 const initCounters = ()=> {
     addCounter('fps');
+    fpsCounter = document.querySelector('#counter-fps');
 }
+
+let lastUpdate = performance.now();
+let frameCount = 0;
+
+export const updateFpsCounter = () => {
+    frameCount++;
+
+    const now = performance.now();
+    const elapsed = now - lastUpdate;
+
+    if (elapsed < 500) return;
+
+    const fps = Math.round((frameCount * 1000)/elapsed);
+
+    if (fpsCounter) {
+        fpsCounter.textContent = `FPS: ${fps}`;
+    }
+
+    frameCount = 0;
+    lastUpdate = now;
+};
 
 const addSetting = (settingText:string, min:string = "0", max:string = "100")=> {
     const settingsLinks = document.querySelector('#settings-links');

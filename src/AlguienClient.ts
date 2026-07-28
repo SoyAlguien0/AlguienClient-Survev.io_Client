@@ -1,5 +1,5 @@
 import { TeamPlayer } from "./types/TeamPlayer.js";
-import { applyUiSettings, setSettings } from "./ui.js";
+import { applyUiSettings, setSettings, updateFpsCounter } from "./ui.js";
 
 const oldCall = Function.prototype.call;
 let updateManager:any = null;
@@ -137,6 +137,10 @@ const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
     if (gameInitialized && hideMap) {
         uiManager.cycleVisibilityMode();
         hideMap = false;
+    }
+
+    if (gameInitialized) {
+        updateFpsCounter();
     }
 }
 
