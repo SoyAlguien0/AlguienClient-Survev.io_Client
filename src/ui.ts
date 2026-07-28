@@ -1,11 +1,11 @@
-const uiElements = document.querySelectorAll<HTMLElement>("#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center,"
+const uiElements = document.querySelectorAll<HTMLInputElement>("#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center,"
                                     +"#ui-top-left,#ui-leaderboard-wrapper,#ui-killfeed-wrapper,#ui-equipped-ammo-wrapper,"
                                     +"#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper,"
                                     +"#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter");
 
 export const applyUiSettings = ()=> {
-    const opacityValue = document.querySelector<HTMLElement>('.slider-oppacity > input')?.value;
-    const scaleValue = document.querySelector<HTMLElement>('.slider-scale > input')?.value;
+    const opacityValue = document.querySelector<HTMLInputElement>('.slider-oppacity > input')?.value;
+    const scaleValue = document.querySelector<HTMLInputElement>('.slider-scale > input')?.value;
     for (const uiElement of uiElements) {
         uiElement.style.scale = scaleValue+'%';
         uiElement.style.opacity = opacityValue+'%';
@@ -15,6 +15,7 @@ export const applyUiSettings = ()=> {
 export const setSettings = ()=> {
     document.querySelector<HTMLElement>('#ui-game-menu')!.style.height = 'fit-content';
     addSettingOptions();
+    loadSettings();
 }
 
 export const addSettingOptions = ()=> {
@@ -42,7 +43,7 @@ const createSettingElement = (settingText:string, min:string, max:string)=> {
     setting.appendChild(settingInput);
 
     setting.addEventListener('change', (e)=>{
-        updateSettings(e.target as HTMLElement);
+        updateSettings(e.target as HTMLInputElement);
         applyUiSettings();
     });
     
@@ -57,11 +58,32 @@ const createSetting = (settingText:string, min:string = "0", max:string = "100")
     quitButton?.before(createSettingElement(settingText, min, max));
 }
 
-const updateSettings = (inputElementEvent:HTMLElement) => {
-    const inputElements = document.querySelectorAll<HTMLElement>('.slider-oppacity > input, .slider-scale > input');
+const updateSettings = (inputElementEvent:HTMLInputElement) => {
+    const inputElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
     for (const inputElement of inputElements) {
         if (inputElement.dataset.setting == inputElementEvent.dataset.setting) {
             inputElement.value = inputElementEvent.value;
+        }
+    }
+    storeSettings(inputElements);
+}
+
+const storeSettings = (inputElements:NodeListOf<HTMLInputElement>) => {
+    let clientSettings:any = {};
+
+    for (const inputElement of inputElements) {
+        clientSettings[inputElement.dataset.setting!] = inputElement.value;
+    }
+
+    localStorage.setItem('client settings', JSON.stringify(clientSettings));
+}
+
+const loadSettings = () => {
+    const clientSettings = JSON.parse(localStorage.getItem('client settings') || '');
+    const inputElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
+    for (const inputElement of inputElements) {
+        if (clientSettings[inputElement.dataset.setting!]) {
+            inputElement.value = clientSettings[inputElement.dataset.setting!];
         }
     }
 }
