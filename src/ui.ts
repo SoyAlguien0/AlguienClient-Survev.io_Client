@@ -14,6 +14,7 @@ const servers = {
 type Region = keyof typeof servers;
 
 const serverSelector = document.querySelector<HTMLInputElement>('#server-select-main');
+const teamServerSelector = document.querySelector<HTMLInputElement>('#team-server-select');
 
 export const applyUiSettings = ()=> {
     const opacityValue = document.querySelector<HTMLInputElement>('.slider-oppacity > input')?.value;
@@ -126,8 +127,11 @@ let waitingForResponse = false;
 let ping = 9999;
 let tries = 0;
 
+const teamMenu = document.querySelector<HTMLElement>('#team-menu');
+let actualRegion = teamMenu?.style.display == "hidden" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
+
+let reconnectTries = 0;
 const openSocket = () => {
-    const actualRegion = serverSelector!.value as Region;
     socket = new WebSocket(servers[actualRegion]);
     socket.binaryType = "arraybuffer";
     socket.addEventListener("message", () => {
@@ -141,14 +145,29 @@ const openSocket = () => {
         if (pingCounter) {
             pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
         }
+        reconnectTries = 0;
     });
+
+    socket.addEventListener("error", ()=> {
+        resetSocket();
+    })
 }
 openSocket();
-//todo: teamSelector
-serverSelector?.addEventListener('change', ()=>{
+
+let retrying = false;
+export const resetSocket = () => {
+    actualRegion = teamMenu?.style.display == "hidden" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
     socket.close();
-    openSocket();
-})
+
+    if (retrying) return;
+    retrying = true;
+
+    setTimeout(()=>{
+        retrying = false;
+        openSocket();
+        reconnectTries++;
+    }, 1000*reconnectTries);
+}
 
 export const updatePingCounter = () => {
     const now = performance.now();

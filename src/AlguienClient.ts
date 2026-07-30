@@ -1,5 +1,5 @@
 import { TeamPlayer } from "./types/TeamPlayer.js";
-import { applyUiSettings, setSettings, updateFpsCounter, updatePingCounter } from "./ui.js";
+import { applyUiSettings, setSettings, updateFpsCounter, updatePingCounter, resetSocket } from "./ui.js";
 
 const oldCall = Function.prototype.call;
 let updateManager:any = null;
@@ -152,6 +152,10 @@ const init = (gameInitialized:boolean, isTeamMode:boolean) => {
     if (gameInitialized && isTeamMode) {
         playerManager = findObject(gameManager, 'teamInfo', true);
         teamPlayers = getTeamMembersInfo();
+    }
+
+    if (gameInitialized) {
+        resetSocket();
     }
 
     if (!gameInitialized) {
