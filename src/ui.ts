@@ -3,6 +3,18 @@ const uiElements = document.querySelectorAll<HTMLInputElement>("#ui-boost-counte
                                     +"#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper,"
                                     +"#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter");
 
+const servers = {
+    na: "wss://usr.mathsiscoolfun.com:8001/ptc",
+    eu: "wss://eur.mathsiscoolfun.com:8001/ptc",
+    ru: "wss://russia.mathsiscoolfun.com:8001/ptc",
+    asia: "wss://asr.mathsiscoolfun.com:8001/ptc",
+    sa: "wss://sa.mathsiscoolfun.com:8001/ptc"
+};
+
+type Region = keyof typeof servers;
+
+const serverSelector = document.querySelector<HTMLInputElement>('#server-select-main');
+
 export const applyUiSettings = ()=> {
     const opacityValue = document.querySelector<HTMLInputElement>('.slider-oppacity > input')?.value;
     const scaleValue = document.querySelector<HTMLInputElement>('.slider-scale > input')?.value;
@@ -107,7 +119,6 @@ export const updateFpsCounter = () => {
     lastUpdate = now;
 };
 
-const url = "wss://eur.mathsiscoolfun.com:8001/ptc";
 let socket:any = null;
 let sendTime = 0;
 let lastPingTime = 0;
@@ -116,7 +127,8 @@ let ping = 9999;
 let tries = 0;
 
 const openSocket = () => {
-    socket = new WebSocket(url);
+    const actualRegion = serverSelector!.value as Region;
+    socket = new WebSocket(servers[actualRegion]);
     socket.binaryType = "arraybuffer";
     socket.addEventListener("message", () => {
         if (!waitingForResponse) return;
@@ -132,6 +144,11 @@ const openSocket = () => {
     });
 }
 openSocket();
+//todo: teamSelector
+serverSelector?.addEventListener('change', ()=>{
+    socket.close();
+    openSocket();
+})
 
 export const updatePingCounter = () => {
     const now = performance.now();
