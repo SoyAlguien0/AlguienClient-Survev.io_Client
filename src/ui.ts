@@ -21,12 +21,21 @@ const serverSelector = document.querySelector<HTMLInputElement>(
 const teamServerSelector = document.querySelector<HTMLInputElement>(
     "#team-server-select",
 );
+const boostCounter = document.querySelector<HTMLElement>("#ui-boost-counter");
+
+let opacityValue = document.querySelector<HTMLInputElement>(
+    ".slider-oppacity > input",
+)?.value;
+let scaleValue = document.querySelector<HTMLInputElement>(
+    ".slider-scale > input",
+)?.value;
 
 export const applyUiSettings = () => {
-    const opacityValue = document.querySelector<HTMLInputElement>(
+    opacityValue = document.querySelector<HTMLInputElement>(
         ".slider-oppacity > input",
     )?.value;
-    const scaleValue = document.querySelector<HTMLInputElement>(
+
+    scaleValue = document.querySelector<HTMLInputElement>(
         ".slider-scale > input",
     )?.value;
     for (const uiElement of uiElements) {
@@ -34,10 +43,46 @@ export const applyUiSettings = () => {
         uiElement.style.opacity = opacityValue + "%";
     }
 };
+let boostDisplay = null;
+let percentageText = null;
 
+const healthContainer =
+    document.querySelector<HTMLElement>("#ui-health-counter");
 export const setSettings = () => {
     document.querySelector<HTMLElement>("#ui-game-menu")!.style.height =
         "fit-content";
+
+    boostDisplay = document.createElement("div");
+    boostDisplay.classList.add("boost-display");
+    Object.assign(boostDisplay.style, {
+        position: "absolute",
+        bottom: "25px",
+        right: "335px",
+        color: "#FF901A",
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        padding: "5px 10px",
+        borderRadius: "5px",
+        fontFamily: "Arial, sans-serif",
+        fontSize: "14px",
+        zIndex: "10",
+        textAlign: "center",
+    });
+
+    percentageText = document.createElement("span");
+    percentageText.classList.add("health-text");
+    Object.assign(percentageText.style, {
+        width: "100%",
+        textAlign: "center",
+        marginTop: "5px",
+        color: "#333",
+        fontSize: "20px",
+        fontWeight: "bold",
+        position: "absolute",
+        zIndex: "10",
+    });
+    healthContainer!.appendChild(percentageText);
+
+    boostCounter!.appendChild(boostDisplay);
     addSettingOptions();
     initCounters();
     loadSettings();
@@ -174,7 +219,6 @@ const openSocket = () => {
         resetSocket();
     });
 };
-openSocket();
 
 let retrying = false;
 export const resetSocket = () => {
@@ -183,7 +227,8 @@ export const resetSocket = () => {
             ? (serverSelector!.value as Region)
             : (teamServerSelector!.value as Region);
     console.log(startMenu?.style.display != "none", actualRegion);
-    socket.close();
+
+    if (socket?.readyState === WebSocket.OPEN) socket.close();
 
     if (retrying) return;
     retrying = true;
@@ -196,6 +241,8 @@ export const resetSocket = () => {
 };
 
 export const updatePingCounter = () => {
+    if (socket?.readyState !== WebSocket.OPEN) return;
+
     const now = performance.now();
     const elapsed = now - lastPingTime;
 
@@ -214,6 +261,36 @@ export const updatePingCounter = () => {
     sendTime = now;
 
     socket.send(new ArrayBuffer(1));
+};
+
+const boostBars = boostCounter!.querySelectorAll<HTMLElement>(
+    ".ui-boost-base .ui-bar-inner",
+);
+
+export const updateBoostBars = () => {
+    let totalBoost = 0;
+    const weights = [25, 25, 40, 10];
+    boostBars.forEach((bar, index) => {
+        const width = Number.parseFloat(bar.style.width || "0");
+        if (!Number.isNaN(width)) totalBoost += width * (weights[index] / 100);
+    });
+    const averageBoost = Math.round(totalBoost);
+    boostDisplay!.textContent = `AD: ${averageBoost}%`;
+    if (averageBoost == 0) {
+        boostCounter!.style.opacity = "0%";
+    } else {
+        boostCounter!.style.opacity = `${opacityValue}%`;
+    }
+};
+
+const actualHealthContainer =
+    document.querySelector<HTMLElement>("#ui-health-actual");
+
+export const updateHealthBars = (): void => {
+    const width = Math.round(
+        Number.parseFloat(actualHealthContainer!.style.width),
+    );
+    percentageText!.textContent = `${width}%`;
 };
 
 const addSetting = (

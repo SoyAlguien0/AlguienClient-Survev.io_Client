@@ -5,6 +5,8 @@ import {
     updateFpsCounter,
     updatePingCounter,
     resetSocket,
+    updateBoostBars,
+    updateHealthBars,
 } from "./ui.js";
 
 const oldCall = Function.prototype.call;
@@ -158,6 +160,8 @@ const update = (gameInitialized: boolean, isTeamMode: boolean) => {
     if (gameInitialized) {
         updateFpsCounter();
         updatePingCounter();
+        updateBoostBars();
+        updateHealthBars();
     }
 };
 
