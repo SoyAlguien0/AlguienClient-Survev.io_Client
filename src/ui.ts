@@ -127,8 +127,8 @@ let waitingForResponse = false;
 let ping = 9999;
 let tries = 0;
 
-const teamMenu = document.querySelector<HTMLElement>('#team-menu');
-let actualRegion = teamMenu?.style.display == "hidden" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
+const startMenu = document.querySelector<HTMLElement>('#start-menu');
+let actualRegion = startMenu?.style.display != "none" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
 
 let reconnectTries = 0;
 const openSocket = () => {
@@ -156,7 +156,8 @@ openSocket();
 
 let retrying = false;
 export const resetSocket = () => {
-    actualRegion = teamMenu?.style.display == "hidden" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
+    actualRegion = startMenu?.style.display != "none" ? serverSelector!.value as Region : teamServerSelector!.value as Region;
+    console.log(startMenu?.style.display != "none", actualRegion)
     socket.close();
 
     if (retrying) return;
