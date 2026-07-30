@@ -3,8 +3,6 @@ const uiElements = document.querySelectorAll<HTMLInputElement>("#ui-boost-counte
                                     +"#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper,"
                                     +"#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter");
 
-let fpsCounter:any = null;
-
 export const applyUiSettings = ()=> {
     const opacityValue = document.querySelector<HTMLInputElement>('.slider-oppacity > input')?.value;
     const scaleValue = document.querySelector<HTMLInputElement>('.slider-scale > input')?.value;
@@ -79,9 +77,13 @@ const addCounter = (name:string)=> {
     topLeft?.append(counter);
 }
 
+let fpsCounter:any = null;
+let pingCounter:any = null;
 const initCounters = ()=> {
     addCounter('fps');
     fpsCounter = document.querySelector('#counter-fps');
+    addCounter('ping');
+    pingCounter = document.querySelector('#counter-ping');
 }
 
 let lastUpdate = performance.now();
@@ -103,6 +105,53 @@ export const updateFpsCounter = () => {
 
     frameCount = 0;
     lastUpdate = now;
+};
+
+const url = "wss://eur.mathsiscoolfun.com:8001/ptc";
+let socket:any = null;
+let sendTime = 0;
+let lastPingTime = 0;
+let waitingForResponse = false;
+let ping = 9999;
+let tries = 0;
+
+const openSocket = () => {
+    socket = new WebSocket(url);
+    socket.binaryType = "arraybuffer";
+    socket.addEventListener("message", () => {
+        if (!waitingForResponse) return;
+
+        const arrivedTime = performance.now();
+
+        ping = arrivedTime - sendTime;
+        waitingForResponse = false;
+
+        if (pingCounter) {
+            pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
+        }
+    });
+}
+openSocket();
+
+export const updatePingCounter = () => {
+    const now = performance.now();
+    const elapsed = now - lastPingTime;
+
+    if (elapsed < 500) return;
+    if (waitingForResponse && elapsed > 3000 && tries <= 3) {
+        socket.close();
+        openSocket();
+        tries++;
+        return;
+    }
+    if (socket.readyState !== WebSocket.OPEN) return;
+    if (waitingForResponse) return;
+
+    lastPingTime = now;
+    waitingForResponse = true;
+    sendTime = now;
+
+    socket.send(new ArrayBuffer(1));
 };
 
 const addSetting = (settingText:string, min:string = "0", max:string = "100")=> {
