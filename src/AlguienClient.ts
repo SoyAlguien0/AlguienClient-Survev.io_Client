@@ -1,24 +1,29 @@
 import { TeamPlayer } from "./types/TeamPlayer.js";
-import { applyUiSettings, setSettings, updateFpsCounter, updatePingCounter, resetSocket } from "./ui.js";
+import {
+    applyUiSettings,
+    setSettings,
+    updateFpsCounter,
+    updatePingCounter,
+    resetSocket,
+} from "./ui.js";
 
 const oldCall = Function.prototype.call;
-let updateManager:any = null;
-let gameManager:any = null;
-let uiManager:any = null;
-let playerManager:any = null;
+let updateManager: any = null;
+let gameManager: any = null;
+let uiManager: any = null;
+let playerManager: any = null;
 let activePlayerId = 0;
 let groupSize = 0;
 let initialized = false;
 let hideMap = true;
 let gameInitialized = false;
 
-
 const getTeamMembersInfo = () => {
-    const teamPlayers:TeamPlayer[] = [];
+    const teamPlayers: TeamPlayer[] = [];
     activePlayerId = getActiveId(gameManager);
     groupSize = getGroupSize();
 
-    if (!playerManager.getPlayerInfo(activePlayerId)) return
+    if (!playerManager.getPlayerInfo(activePlayerId)) return;
     let groupId = playerManager.getPlayerInfo(activePlayerId).groupId;
 
     if (!playerManager.getGroupInfo(groupId)) return;
@@ -31,19 +36,19 @@ const getTeamMembersInfo = () => {
             id: id,
             name: teammateName,
             textColor: teammateColor,
-        })
+        });
     }
     return teamPlayers;
-}
+};
 
 const getGroupSize = () => {
     activePlayerId = getActiveId(gameManager);
-    if (!playerManager.getPlayerInfo(activePlayerId)) return
+    if (!playerManager.getPlayerInfo(activePlayerId)) return;
     let groupId = playerManager.getPlayerInfo(activePlayerId).groupId;
 
     if (!playerManager.getGroupInfo(groupId)) return;
     return playerManager.getGroupInfo(groupId).playerIds.length;
-}
+};
 
 const updateTextStyleNames = (playersArray: any) => {
     for (const player of playersArray) {
@@ -52,24 +57,26 @@ const updateTextStyleNames = (playersArray: any) => {
             player.nameText.style.fill = teamPlayerInfo.textColor;
         }
     }
-}
+};
 
-const updateTextStyleNamesDead = (deadBodiesArray:any) => {
+const updateTextStyleNamesDead = (deadBodiesArray: any) => {
     for (const deadBody of deadBodiesArray) {
-        const player = teamPlayers.find(
-            p => p.id === deadBody.playerId
-        );
+        const player = teamPlayers.find((p) => p.id === deadBody.playerId);
 
         deadBody.nameText.style.fill = player?.textColor ?? 12237498;
     }
 };
 
-function findObject(gameManager:any, object:string, anonymousObject:boolean) {
+function findObject(
+    gameManager: any,
+    object: string,
+    anonymousObject: boolean,
+) {
     if (!anonymousObject) {
         for (const value of Object.values(gameManager) as any) {
             if (!value || typeof value !== "object") continue;
 
-            if ( value[object] ) {
+            if (value[object]) {
                 return value[object];
             }
         }
@@ -86,24 +93,25 @@ function findObject(gameManager:any, object:string, anonymousObject:boolean) {
     }
 }
 
-let playersArray:any = null;
+let playersArray: any = null;
 const findPlayersArray = (gameManager: any) => {
-    const playerPool = findObject(gameManager, 'playerPool', false);
+    const playerPool = findObject(gameManager, "playerPool", false);
     for (const value of Object.values(playerPool) as any) {
-        if (value && typeof value === "object" && Array.isArray(value)) return value;
+        if (value && typeof value === "object" && Array.isArray(value))
+            return value;
     }
     return null;
-}
+};
 
-let deadBodiesArray:any = null;
+let deadBodiesArray: any = null;
 const findDeadBodiesArray = (gameManager: any) => {
-    const playerPool = findObject(gameManager, 'deadBodyPool', false);
+    const playerPool = findObject(gameManager, "deadBodyPool", false);
     for (const value of Object.values(playerPool) as any) {
-        if (value && typeof value === "object" && Array.isArray(value)) return value;
+        if (value && typeof value === "object" && Array.isArray(value))
+            return value;
     }
     return null;
-}
-
+};
 
 const getActiveId = (gameManager: any) => {
     const values = Object.values(gameManager) as any;
@@ -114,21 +122,29 @@ const getActiveId = (gameManager: any) => {
     }
 
     return null;
-}
+};
 
-let teamPlayers:any = null;
-const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
+let teamPlayers: any = null;
+const update = (gameInitialized: boolean, isTeamMode: boolean) => {
     if (gameInitialized && isTeamMode) {
-        if (getGroupSize() != groupSize || getActiveId(gameManager) != activePlayerId) {
+        if (
+            getGroupSize() != groupSize ||
+            getActiveId(gameManager) != activePlayerId
+        ) {
             teamPlayers = getTeamMembersInfo();
         }
-        const players = playersArray ? playersArray : findPlayersArray(gameManager);
+        const players = playersArray
+            ? playersArray
+            : findPlayersArray(gameManager);
 
-        if (teamPlayers && players!.length > 1) { //1 to not count active player
+        if (teamPlayers && players!.length > 1) {
+            //1 to not count active player
             updateTextStyleNames(players);
         }
 
-        const deadBodies = deadBodiesArray ? deadBodiesArray : findDeadBodiesArray(gameManager); 
+        const deadBodies = deadBodiesArray
+            ? deadBodiesArray
+            : findDeadBodiesArray(gameManager);
         if (teamPlayers && deadBodies!.length > 0) {
             updateTextStyleNamesDead(deadBodies);
         }
@@ -143,14 +159,14 @@ const update  = (gameInitialized:boolean, isTeamMode:boolean) => {
         updateFpsCounter();
         updatePingCounter();
     }
-}
+};
 
-const init = (gameInitialized:boolean, isTeamMode:boolean) => {
-    uiManager = findObject(gameManager, 'killLeaderCount', true);
+const init = (gameInitialized: boolean, isTeamMode: boolean) => {
+    uiManager = findObject(gameManager, "killLeaderCount", true);
     applyUiSettings();
 
     if (gameInitialized && isTeamMode) {
-        playerManager = findObject(gameManager, 'teamInfo', true);
+        playerManager = findObject(gameManager, "teamInfo", true);
         teamPlayers = getTeamMembersInfo();
     }
 
@@ -166,8 +182,7 @@ const init = (gameInitialized:boolean, isTeamMode:boolean) => {
         playersArray = null;
         deadBodiesArray = null;
     }
-}
-
+};
 
 Function.prototype.call = function (...args) {
     if (!initialized && args[0]?.pixi && args[0]?.game) {
@@ -178,7 +193,7 @@ Function.prototype.call = function (...args) {
     }
 
     const isUpdateManager = updateManager == args[0];
-    
+
     if (isUpdateManager && initialized) {
         const gameStateChanged = gameInitialized != gameManager.initialized;
         const isTeamMode = gameManager.teamMode > 1;
