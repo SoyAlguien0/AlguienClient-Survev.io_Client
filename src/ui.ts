@@ -183,7 +183,7 @@ const storeSettings = (settingElements:NodeListOf<HTMLInputElement>) => {
 }
 
 const loadSettings = () => {
-    const clientSettings = JSON.parse(localStorage.getItem('client settings') || '');
+    const clientSettings = JSON.parse(localStorage.getItem('client settings') || '{}');
     const settingElements = document.querySelectorAll<HTMLInputElement>('[data-setting]');
     for (const settingElement of settingElements) {
         if (clientSettings[settingElement.dataset.setting!]) {
