@@ -4,7 +4,12 @@ const uiElements = document.querySelectorAll<HTMLInputElement>(
         "#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper," +
         "#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter",
 );
-
+const serverSelector = document.querySelector<HTMLInputElement>(
+    "#server-select-main",
+);
+const teamServerSelector = document.querySelector<HTMLInputElement>(
+    "#team-server-select",
+);
 const servers = {
     na: "wss://usr.mathsiscoolfun.com:8001/ptc",
     eu: "wss://eur.mathsiscoolfun.com:8001/ptc",
@@ -12,23 +17,10 @@ const servers = {
     asia: "wss://asr.mathsiscoolfun.com:8001/ptc",
     sa: "wss://sa.mathsiscoolfun.com:8001/ptc",
 };
-
 type Region = keyof typeof servers;
 
-const serverSelector = document.querySelector<HTMLInputElement>(
-    "#server-select-main",
-);
-const teamServerSelector = document.querySelector<HTMLInputElement>(
-    "#team-server-select",
-);
-const boostCounter = document.querySelector<HTMLElement>("#ui-boost-counter");
-
-let opacityValue = document.querySelector<HTMLInputElement>(
-    ".slider-oppacity > input",
-)?.value;
-let scaleValue = document.querySelector<HTMLInputElement>(
-    ".slider-scale > input",
-)?.value;
+let opacityValue: any = null;
+let scaleValue: any = null;
 
 export const applyUiSettings = () => {
     opacityValue = document.querySelector<HTMLInputElement>(
@@ -45,13 +37,16 @@ export const applyUiSettings = () => {
 };
 let boostDisplay = null;
 let percentageText = null;
+const boostCounter = document.querySelector<HTMLElement>("#ui-boost-counter");
 
 const healthContainer =
     document.querySelector<HTMLElement>("#ui-health-counter");
+
 export const setSettings = () => {
     document.querySelector<HTMLElement>("#ui-game-menu")!.style.height =
         "fit-content";
 
+    //todo: separateb
     boostDisplay = document.createElement("div");
     boostDisplay.classList.add("boost-display");
     Object.assign(boostDisplay.style, {
