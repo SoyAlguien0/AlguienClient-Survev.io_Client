@@ -1,10 +1,10 @@
 {
   "name": "alguienclient",
-  "version": "1.0.0",
+  "version": "1.0.12",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "node scripts/build-userscript.mjs"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
   "homepage": "https://github.com/SoyAlguien0/AlguienClient#readme",
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "esbuild": "^0.28.1",
     "typescript": "^5.9.2"
   }
 }
