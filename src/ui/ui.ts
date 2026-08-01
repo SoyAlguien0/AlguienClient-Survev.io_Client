@@ -9,9 +9,11 @@ import {
 } from "../consts.js";
 import { resendPing } from "./ping.js";
 
+//todo: separate, objects
 
-let opacityValue: any = null;
-let scaleValue: any = null;
+let opacityValue:any = "100";
+let scaleValue:any = "100";
+export let hideMiniMap:any = false;
 
 export const applyUiSettings = () => {
     opacityValue = document.querySelector<HTMLInputElement>(
@@ -21,6 +23,11 @@ export const applyUiSettings = () => {
     scaleValue = document.querySelector<HTMLInputElement>(
         ".slider-scale > input",
     )?.value;
+
+    hideMiniMap = document.querySelector<HTMLInputElement>(
+        ".checkbox-hideminimap > input",
+    )?.checked;
+
     for (const uiElement of uiElements) {
         uiElement.style.scale = scaleValue + "%";
         uiElement.style.opacity = opacityValue + "%";
@@ -61,41 +68,6 @@ const initStatusDisplays = () => {
     });
     healthContainer!.appendChild(percentageText);
     boostCounter!.appendChild(boostDisplay);
-};
-
-const createSettingElement = (
-    settingText: string,
-    min: string,
-    max: string,
-) => {
-    const setting = document.createElement("div");
-    setting.classList.add(
-        "modal-settings-item",
-        "slider-container",
-        "slider-" + settingText.toLowerCase(),
-    );
-
-    const settingTextElement = document.createElement("p");
-    settingTextElement.classList.add("modal-slider-text");
-    settingTextElement.textContent = settingText;
-
-    const settingInput = document.createElement("input");
-    settingInput.type = "range";
-    settingInput.min = min;
-    settingInput.max = max;
-    settingInput.value = max;
-    settingInput.classList.add("slider", "sl-master-volume");
-    settingInput.dataset.setting = settingText.toLowerCase();
-
-    setting.appendChild(settingTextElement);
-    setting.appendChild(settingInput);
-
-    setting.addEventListener("change", (e) => {
-        updateSettings(e.target as HTMLInputElement);
-        applyUiSettings();
-    });
-
-    return setting;
 };
 
 const createCounterElement = (name: string) => {
@@ -154,11 +126,11 @@ const updateFpsCounter = () => {
     lastUpdate = now;
 };
 
-export const updatePingCounter = (ping:number) => {
+export const updatePingCounter = (ping: number) => {
     if (pingCounter) {
         pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
     }
-}
+};
 
 const updateBoostBars = () => {
     let totalBoost = 0;
@@ -205,21 +177,89 @@ export const updateUi = () => {
     updateGunsBorder();
 };
 
+//todo: improve this
+const createSettingElement = (
+    settingText: string,
+    type: string,
+    contentText: string,
+    min: string,
+    max: string,
+) => {
+    const setting = document.createElement("div");
+    if (type == "slider") {
+        setting.classList.add(
+            "modal-settings-item",
+            "slider-container",
+            "slider-" + settingText.toLowerCase(),
+        );
+
+        const settingTextElement = document.createElement("p");
+        settingTextElement.classList.add("modal-slider-text");
+        settingTextElement.textContent = contentText;
+
+        const settingInput = document.createElement("input");
+        settingInput.type = "range";
+        settingInput.min = min;
+        settingInput.max = max;
+        settingInput.value = max;
+        settingInput.classList.add("slider", "sl-master-volume");
+        settingInput.dataset.setting = settingText.toLowerCase();
+
+        setting.appendChild(settingTextElement);
+        setting.appendChild(settingInput);
+
+        setting.addEventListener("change", (e) => {
+            updateSettings(e.target as HTMLInputElement);
+            applyUiSettings();
+        });
+
+    } else if (type == "checkbox") {
+        setting.classList.add(
+            "modal-settings-item",
+            "checkbox-" + settingText.toLowerCase(),
+        );
+
+        const settingTextElement = document.createElement("p");
+        settingTextElement.classList.add("modal-settings-checkbox-text");
+        settingTextElement.textContent = contentText;
+
+        const settingInput = document.createElement("input");
+        settingInput.type = "checkbox";
+        settingInput.dataset.setting = settingText.toLowerCase();
+
+        setting.appendChild(settingTextElement);
+        setting.appendChild(settingInput);
+
+        setting.addEventListener("change", (e) => {
+            updateSettings(e.target as HTMLInputElement);
+            applyUiSettings();
+        });
+    }
+
+    return setting;
+};
+
+//improve this
 const addClientSettings = (
     settingText: string,
+    type: string,
+    contentText: string = settingText,
     min: string = "0",
     max: string = "100",
 ) => {
     const settingsLinks = document.querySelector("#settings-links");
-    settingsLinks?.before(createSettingElement(settingText, min, max));
-
-    const quitButton = document.querySelector("#btn-game-quit");
-    quitButton?.before(createSettingElement(settingText, min, max));
+    settingsLinks?.before(createSettingElement(settingText, type, contentText, min, max));
+    
+    if (type == "slider") {
+        const quitButton = document.querySelector("#btn-game-quit");
+        quitButton?.before(createSettingElement(settingText, type, contentText, min, max));
+    }
 };
 
 export const addSettingOptions = () => {
-    addClientSettings("Oppacity");
-    addClientSettings("Scale", "70");
+    addClientSettings("opacity", "slider", "Opacity");
+    addClientSettings("scale", "slider", "Scale", "70");
+    addClientSettings("hideMiniMap", "checkbox", "Hide mini map at start");
 };
 
 export const setSettings = () => {
@@ -231,7 +271,6 @@ export const setSettings = () => {
     initCounters();
     loadSettings();
 };
-
 
 const updateSettings = (triggeredSettingElement: HTMLInputElement) => {
     const settingElements =
@@ -247,11 +286,12 @@ const updateSettings = (triggeredSettingElement: HTMLInputElement) => {
     storeSettings(settingElements);
 };
 
+//todo: i need objects
 const storeSettings = (settingElements: NodeListOf<HTMLInputElement>) => {
     let clientSettings: any = {};
 
     for (const settingElement of settingElements) {
-        clientSettings[settingElement.dataset.setting!] = settingElement.value;
+        clientSettings[settingElement.dataset.setting!] = settingElement.type != "checkbox"? settingElement.value : settingElement.checked;
     }
 
     localStorage.setItem("client settings", JSON.stringify(clientSettings));
@@ -265,8 +305,12 @@ const loadSettings = () => {
         document.querySelectorAll<HTMLInputElement>("[data-setting]");
     for (const settingElement of settingElements) {
         if (clientSettings[settingElement.dataset.setting!]) {
-            settingElement.value =
+            if (settingElement.type == "checkbox") {
+                settingElement.checked =  clientSettings[settingElement.dataset.setting!];
+            } else {
+                settingElement.value =
                 clientSettings[settingElement.dataset.setting!];
+            }
         }
     }
 };

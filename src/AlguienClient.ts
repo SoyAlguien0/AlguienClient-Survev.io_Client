@@ -3,8 +3,11 @@ import {
     applyUiSettings,
     setSettings,
     updateUi,
+    hideMiniMap,
 } from "./ui/ui.js";
 import { resetSocket } from "./ui/ping.js";
+
+//todo: separate, objects
 
 const oldCall = Function.prototype.call;
 let updateManager: any = null;
@@ -14,7 +17,6 @@ let playerManager: any = null;
 let activePlayerId = 0;
 let groupSize = 0;
 let initialized = false;
-let hideMap = true;
 let gameInitialized = false;
 
 const getTeamMembersInfo = () => {
@@ -149,11 +151,6 @@ const update = (gameInitialized: boolean, isTeamMode: boolean) => {
         }
     }
 
-    if (gameInitialized && hideMap) {
-        uiManager.cycleVisibilityMode();
-        hideMap = false;
-    }
-
     if (gameInitialized) {
         updateUi();
     }
@@ -168,6 +165,11 @@ const init = (gameInitialized: boolean, isTeamMode: boolean) => {
         teamPlayers = getTeamMembersInfo();
     }
 
+    if (gameInitialized && hideMiniMap) {
+        console.log(hideMiniMap);
+        uiManager.cycleVisibilityMode();
+    }
+
     if (gameInitialized) {
         resetSocket();
     }
@@ -176,7 +178,6 @@ const init = (gameInitialized: boolean, isTeamMode: boolean) => {
         activePlayerId = 0;
         groupSize = 0;
         teamPlayers = null;
-        hideMap = true;
         playersArray = null;
         deadBodiesArray = null;
     }
