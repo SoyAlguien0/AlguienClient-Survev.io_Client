@@ -107,3 +107,40 @@ export const weaponAmmoColors: Record<string, AmmoColor> = {
     "M9 Cursed": AmmoColor.Black,
     "Rainbow Blaster": AmmoColor.Magenta,
 };
+
+export const uiElements = document.querySelectorAll<HTMLInputElement>(
+    "#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center," +
+        "#ui-top-left,#ui-leaderboard-wrapper,#ui-killfeed-wrapper,#ui-equipped-ammo-wrapper," +
+        "#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper," +
+        "#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter",
+);
+export const serverSelector = document.querySelector<HTMLInputElement>(
+    "#server-select-main",
+);
+export const teamServerSelector = document.querySelector<HTMLInputElement>(
+    "#team-server-select",
+);
+export const servers = {
+    na: "wss://usr.mathsiscoolfun.com:8001/ptc",
+    eu: "wss://eur.mathsiscoolfun.com:8001/ptc",
+    ru: "wss://russia.mathsiscoolfun.com:8001/ptc",
+    asia: "wss://asr.mathsiscoolfun.com:8001/ptc",
+    sa: "wss://sa.mathsiscoolfun.com:8001/ptc",
+};
+
+export const boostCounter = document.querySelector<HTMLElement>(
+    "#ui-boost-counter",
+);
+export const healthContainer = document.querySelector<HTMLElement>(
+    "#ui-health-counter",
+);
+export const startMenu = document.querySelector<HTMLElement>("#start-menu");
+export const boostBars = boostCounter!.querySelectorAll<HTMLElement>(
+    ".ui-boost-base .ui-bar-inner",
+);
+export const actualHealthContainer = document.querySelector<HTMLElement>(
+    "#ui-health-actual",
+);
+export const gunsContainer = document.querySelectorAll<HTMLElement>(
+    ".ui-weapon-switch",
+);

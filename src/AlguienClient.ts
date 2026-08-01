@@ -2,13 +2,9 @@ import { TeamPlayer } from "./types/TeamPlayer.js";
 import {
     applyUiSettings,
     setSettings,
-    updateFpsCounter,
-    updatePingCounter,
-    resetSocket,
-    updateBoostBars,
-    updateHealthBars,
-    updateGunsBorder,
-} from "./ui.js";
+    updateUi,
+} from "./ui/ui.js";
+import { resetSocket } from "./ui/ping.js";
 
 const oldCall = Function.prototype.call;
 let updateManager: any = null;
@@ -64,7 +60,7 @@ const updateTextStyleNames = (playersArray: any) => {
 
 const updateTextStyleNamesDead = (deadBodiesArray: any) => {
     for (const deadBody of deadBodiesArray) {
-        const player = teamPlayers.find((p) => p.id === deadBody.playerId);
+        const player = teamPlayers.find((p: any) => p.id === deadBody.playerId);
 
         deadBody.nameText.style.fill = player?.textColor ?? 12237498;
     }
@@ -159,11 +155,7 @@ const update = (gameInitialized: boolean, isTeamMode: boolean) => {
     }
 
     if (gameInitialized) {
-        updateFpsCounter();
-        updatePingCounter();
-        updateBoostBars();
-        updateHealthBars();
-        updateGunsBorder();
+        updateUi();
     }
 };
 

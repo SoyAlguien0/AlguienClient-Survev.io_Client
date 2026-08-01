@@ -1,25 +1,14 @@
-import { weaponAmmoColors } from "./consts.js";
+import {
+    weaponAmmoColors,
+    uiElements,
+    boostCounter,
+    healthContainer,
+    boostBars,
+    actualHealthContainer,
+    gunsContainer,
+} from "../consts.js";
+import { resendPing } from "./ping.js";
 
-const uiElements = document.querySelectorAll<HTMLInputElement>(
-    "#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center," +
-        "#ui-top-left,#ui-leaderboard-wrapper,#ui-killfeed-wrapper,#ui-equipped-ammo-wrapper," +
-        "#ui-bottom-center-right,#ui-top-center-scopes, #ui-kill-leader-wrapper," +
-        "#ui-map-expand-desktop, #ui-map-minimize, #ui-map-info, #ui-spec-counter",
-);
-const serverSelector = document.querySelector<HTMLInputElement>(
-    "#server-select-main",
-);
-const teamServerSelector = document.querySelector<HTMLInputElement>(
-    "#team-server-select",
-);
-const servers = {
-    na: "wss://usr.mathsiscoolfun.com:8001/ptc",
-    eu: "wss://eur.mathsiscoolfun.com:8001/ptc",
-    ru: "wss://russia.mathsiscoolfun.com:8001/ptc",
-    asia: "wss://asr.mathsiscoolfun.com:8001/ptc",
-    sa: "wss://sa.mathsiscoolfun.com:8001/ptc",
-};
-type Region = keyof typeof servers;
 
 let opacityValue: any = null;
 let scaleValue: any = null;
@@ -37,18 +26,11 @@ export const applyUiSettings = () => {
         uiElement.style.opacity = opacityValue + "%";
     }
 };
+
 let boostDisplay = null;
 let percentageText = null;
-const boostCounter = document.querySelector<HTMLElement>("#ui-boost-counter");
 
-const healthContainer =
-    document.querySelector<HTMLElement>("#ui-health-counter");
-
-export const setSettings = () => {
-    document.querySelector<HTMLElement>("#ui-game-menu")!.style.height =
-        "fit-content";
-
-    //todo: separateb
+const initStatusDisplays = () => {
     boostDisplay = document.createElement("div");
     boostDisplay.classList.add("boost-display");
     Object.assign(boostDisplay.style, {
@@ -78,16 +60,7 @@ export const setSettings = () => {
         zIndex: "10",
     });
     healthContainer!.appendChild(percentageText);
-
     boostCounter!.appendChild(boostDisplay);
-    addSettingOptions();
-    initCounters();
-    loadSettings();
-};
-
-export const addSettingOptions = () => {
-    addSetting("Oppacity");
-    addSetting("Scale", "70");
 };
 
 const createSettingElement = (
@@ -163,7 +136,7 @@ const initCounters = () => {
 let lastUpdate = performance.now();
 let frameCount = 0;
 
-export const updateFpsCounter = () => {
+const updateFpsCounter = () => {
     frameCount++;
 
     const now = performance.now();
@@ -181,89 +154,13 @@ export const updateFpsCounter = () => {
     lastUpdate = now;
 };
 
-let socket: any = null;
-let sendTime = 0;
-let lastPingTime = 0;
-let waitingForResponse = false;
-let ping = 9999;
-let tries = 0;
-
-const startMenu = document.querySelector<HTMLElement>("#start-menu");
-let actualRegion =
-    startMenu?.style.display != "none"
-        ? (serverSelector!.value as Region)
-        : (teamServerSelector!.value as Region);
-
-let reconnectTries = 0;
-const openSocket = () => {
-    socket = new WebSocket(servers[actualRegion]);
-    socket.binaryType = "arraybuffer";
-    socket.addEventListener("message", () => {
-        if (!waitingForResponse) return;
-
-        const arrivedTime = performance.now();
-
-        ping = arrivedTime - sendTime;
-        waitingForResponse = false;
-
-        if (pingCounter) {
-            pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
-        }
-        reconnectTries = 0;
-    });
-
-    socket.addEventListener("error", () => {
-        resetSocket();
-    });
-};
-
-let retrying = false;
-export const resetSocket = () => {
-    actualRegion =
-        startMenu?.style.display != "none"
-            ? (serverSelector!.value as Region)
-            : (teamServerSelector!.value as Region);
-
-    if (socket?.readyState === WebSocket.OPEN) socket.close();
-
-    if (retrying) return;
-    retrying = true;
-
-    setTimeout(() => {
-        retrying = false;
-        openSocket();
-        reconnectTries++;
-    }, 1000 * reconnectTries);
-};
-
-export const updatePingCounter = () => {
-    if (socket?.readyState !== WebSocket.OPEN) return;
-
-    const now = performance.now();
-    const elapsed = now - lastPingTime;
-
-    if (elapsed < 500) return;
-    if (waitingForResponse && elapsed > 3000 && tries <= 3) {
-        socket.close();
-        openSocket();
-        tries++;
-        return;
+export const updatePingCounter = (ping:number) => {
+    if (pingCounter) {
+        pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
     }
-    if (socket.readyState !== WebSocket.OPEN) return;
-    if (waitingForResponse) return;
+}
 
-    lastPingTime = now;
-    waitingForResponse = true;
-    sendTime = now;
-
-    socket.send(new ArrayBuffer(1));
-};
-
-const boostBars = boostCounter!.querySelectorAll<HTMLElement>(
-    ".ui-boost-base .ui-bar-inner",
-);
-
-export const updateBoostBars = () => {
+const updateBoostBars = () => {
     let totalBoost = 0;
     const weights = [25, 25, 40, 10];
     boostBars.forEach((bar, index) => {
@@ -279,19 +176,14 @@ export const updateBoostBars = () => {
     }
 };
 
-const actualHealthContainer =
-    document.querySelector<HTMLElement>("#ui-health-actual");
-
-export const updateHealthBars = (): void => {
+const updateHealthBars = (): void => {
     const width = Math.round(
         Number.parseFloat(actualHealthContainer!.style.width),
     );
     percentageText!.textContent = `${width}%`;
 };
 
-const gunsContainer =
-    document.querySelectorAll<HTMLElement>(".ui-weapon-switch");
-export const updateGunsBorder = () => {
+const updateGunsBorder = () => {
     for (const gunContainer of gunsContainer) {
         gunContainer.style.borderColor = "white";
         const name = gunContainer.querySelector(".ui-weapon-name")?.textContent;
@@ -305,7 +197,15 @@ export const updateGunsBorder = () => {
     }
 };
 
-const addSetting = (
+export const updateUi = () => {
+    updateFpsCounter();
+    resendPing();
+    updateBoostBars();
+    updateHealthBars();
+    updateGunsBorder();
+};
+
+const addClientSettings = (
     settingText: string,
     min: string = "0",
     max: string = "100",
@@ -316,6 +216,22 @@ const addSetting = (
     const quitButton = document.querySelector("#btn-game-quit");
     quitButton?.before(createSettingElement(settingText, min, max));
 };
+
+export const addSettingOptions = () => {
+    addClientSettings("Oppacity");
+    addClientSettings("Scale", "70");
+};
+
+export const setSettings = () => {
+    document.querySelector<HTMLElement>("#ui-game-menu")!.style.height =
+        "fit-content";
+
+    initStatusDisplays();
+    addSettingOptions();
+    initCounters();
+    loadSettings();
+};
+
 
 const updateSettings = (triggeredSettingElement: HTMLInputElement) => {
     const settingElements =
