@@ -46,7 +46,7 @@ export const resetSocket = () => {
             ? (serverSelector!.value as Region)
             : (teamServerSelector!.value as Region);
 
-    if (socket?.readyState === WebSocket.OPEN) socket.close();
+    if (socket && socket.readyState === WebSocket.OPEN) socket.close();
 
     if (retrying) return;
     retrying = true;

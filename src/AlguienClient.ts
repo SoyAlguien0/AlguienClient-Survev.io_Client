@@ -166,7 +166,6 @@ const init = (gameInitialized: boolean, isTeamMode: boolean) => {
     }
 
     if (gameInitialized && hideMiniMap) {
-        console.log(hideMiniMap);
         uiManager.cycleVisibilityMode();
     }
 
