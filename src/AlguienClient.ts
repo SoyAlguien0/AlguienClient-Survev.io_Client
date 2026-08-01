@@ -7,6 +7,7 @@ import {
     resetSocket,
     updateBoostBars,
     updateHealthBars,
+    updateGunsBorder,
 } from "./ui.js";
 
 const oldCall = Function.prototype.call;
@@ -162,6 +163,7 @@ const update = (gameInitialized: boolean, isTeamMode: boolean) => {
         updatePingCounter();
         updateBoostBars();
         updateHealthBars();
+        updateGunsBorder();
     }
 };
 

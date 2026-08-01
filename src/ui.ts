@@ -1,3 +1,5 @@
+import { weaponAmmoColors } from "./consts.js";
+
 const uiElements = document.querySelectorAll<HTMLInputElement>(
     "#ui-boost-counter, #ui-health-counter,#ui-weapon-container,#ui-right-center," +
         "#ui-top-left,#ui-leaderboard-wrapper,#ui-killfeed-wrapper,#ui-equipped-ammo-wrapper," +
@@ -286,6 +288,22 @@ export const updateHealthBars = (): void => {
         Number.parseFloat(actualHealthContainer!.style.width),
     );
     percentageText!.textContent = `${width}%`;
+};
+
+const gunsContainer =
+    document.querySelectorAll<HTMLElement>(".ui-weapon-switch");
+export const updateGunsBorder = () => {
+    for (const gunContainer of gunsContainer) {
+        gunContainer.style.borderColor = "white";
+        const name = gunContainer.querySelector(".ui-weapon-name")?.textContent;
+        if (gunContainer.dataset.slot) {
+            gunContainer.style.borderColor = name
+                ? weaponAmmoColors[name as string]
+                : "white";
+        } else if (gunContainer.id == "ui-weapon-id-4") {
+            gunContainer.style.borderColor = "#2f4032";
+        }
+    }
 };
 
 const addSetting = (
