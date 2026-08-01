@@ -1,10 +1,10 @@
 {
   "name": "alguienclient",
-  "version": "1.0.0",
+  "version": "1.0.12",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/AlguienClient.ts --bundle --outfile=dist/AlguienClient.js"
+    "build": "node scripts/build-userscript.mjs"
   },
   "repository": {
     "type": "git",
