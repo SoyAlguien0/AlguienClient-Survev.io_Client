@@ -17,7 +17,7 @@ export let hideMiniMap:any = false;
 
 export const applyUiSettings = () => {
     opacityValue = document.querySelector<HTMLInputElement>(
-        ".slider-oppacity > input",
+        ".slider-opacity > input",
     )?.value;
 
     scaleValue = document.querySelector<HTMLInputElement>(

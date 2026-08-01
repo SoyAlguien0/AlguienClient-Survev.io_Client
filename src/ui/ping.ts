@@ -59,24 +59,24 @@ export const resetSocket = () => {
 };
 
 export const resendPing = () => {
-    if (socket?.readyState !== WebSocket.OPEN) return;
+    const currentSocket = socket;
+    if (!currentSocket || currentSocket.readyState !== WebSocket.OPEN) return;
 
     const now = performance.now();
     const elapsed = now - lastPingTime;
 
     if (elapsed < 500) return;
     if (waitingForResponse && elapsed > 3000 && tries <= 3) {
-        socket.close();
+        currentSocket.close();
         openSocket();
         tries++;
         return;
     }
-    if (socket.readyState !== WebSocket.OPEN) return;
     if (waitingForResponse) return;
 
     lastPingTime = now;
     waitingForResponse = true;
     sendTime = now;
 
-    socket.send(new ArrayBuffer(1));
+    currentSocket.send(new ArrayBuffer(1));
 };
