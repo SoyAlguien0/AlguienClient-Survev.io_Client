@@ -223,7 +223,6 @@ export const resetSocket = () => {
         startMenu?.style.display != "none"
             ? (serverSelector!.value as Region)
             : (teamServerSelector!.value as Region);
-    console.log(startMenu?.style.display != "none", actualRegion);
 
     if (socket?.readyState === WebSocket.OPEN) socket.close();
 
