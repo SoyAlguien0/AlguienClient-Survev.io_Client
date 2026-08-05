@@ -13,6 +13,8 @@ import { resendPing } from "./ping.js";
 
 let opacityValue:any = "100";
 let scaleValue:any = "100";
+let showPing:any = false;
+let showFps:any = false;
 export let hideMiniMap:any = false;
 
 export const applyUiSettings = () => {
@@ -27,6 +29,17 @@ export const applyUiSettings = () => {
     hideMiniMap = document.querySelector<HTMLInputElement>(
         ".checkbox-hideminimap > input",
     )?.checked;
+
+    showPing = document.querySelector<HTMLInputElement>(
+        ".checkbox-showping > input",
+    )?.checked;
+
+    showFps = document.querySelector<HTMLInputElement>(
+        ".checkbox-showfps > input",
+    )?.checked;
+
+    pingCounter.style.display = showPing ? "block" : "none";
+    fpsCounter.style.display = showFps ? "block" : "none";
 
     for (const uiElement of uiElements) {
         uiElement.style.scale = scaleValue + "%";
@@ -109,6 +122,7 @@ let lastUpdate = performance.now();
 let frameCount = 0;
 
 const updateFpsCounter = () => {
+    if (!showFps) return;
     frameCount++;
 
     const now = performance.now();
@@ -118,18 +132,15 @@ const updateFpsCounter = () => {
 
     const fps = Math.round((frameCount * 1000) / elapsed);
 
-    if (fpsCounter) {
-        fpsCounter.textContent = `FPS: ${fps}`;
-    }
+    fpsCounter.textContent = `FPS: ${fps}`;
 
     frameCount = 0;
     lastUpdate = now;
 };
 
 export const updatePingCounter = (ping: number) => {
-    if (pingCounter) {
-        pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
-    }
+    if (!showPing) return;
+    pingCounter.textContent = `PING: ${Math.round(ping)}ms`;
 };
 
 const updateBoostBars = () => {
@@ -260,6 +271,8 @@ export const addSettingOptions = () => {
     addClientSettings("opacity", "slider", "Opacity");
     addClientSettings("scale", "slider", "Scale", "70");
     addClientSettings("hideMiniMap", "checkbox", "Hide mini map at start");
+    addClientSettings("showPing", "checkbox", "Show ping counter");
+    addClientSettings("showFps", "checkbox", "Show fps counter");
 };
 
 export const setSettings = () => {
@@ -270,6 +283,7 @@ export const setSettings = () => {
     addSettingOptions();
     initCounters();
     loadSettings();
+    applyUiSettings();
 };
 
 const updateSettings = (triggeredSettingElement: HTMLInputElement) => {
