@@ -227,8 +227,8 @@ const createSettingElement = (
         settingInput.type = "checkbox";
         settingInput.dataset.setting = settingText.toLowerCase();
 
-        setting.appendChild(settingTextElement);
         setting.appendChild(settingInput);
+        setting.appendChild(settingTextElement);
 
         setting.addEventListener("change", (e) => {
             updateSettings(e.target as HTMLInputElement);
@@ -239,7 +239,7 @@ const createSettingElement = (
     return setting;
 };
 
-//improve this
+//todo: improve this
 const addClientSettings = (
     settingText: string,
     type: string,
